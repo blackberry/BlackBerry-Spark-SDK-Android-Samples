@@ -159,7 +159,7 @@ public class DeviceChecksActivity extends AppCompatActivity {
                 sbSecurityErrors.append("Developer mode is enabled.\n");
             }
 
-            if (deviceSecurity.isScreenLockEnabled())
+            if (!deviceSecurity.isScreenLockEnabled())
             {
                 sbSecurityErrors.append("Screen lock (device password) has not been enabled.\n");
             }
