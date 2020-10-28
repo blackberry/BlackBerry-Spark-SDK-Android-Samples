@@ -113,7 +113,9 @@ public class SettingsActivity extends AppCompatActivity implements AdapterView.O
 
     //Upload BlackBerry Spark SDK logs to a BlackBerry data center for analysis.
     private void scheduleLogUpload() {
-        mDiagnostics.uploadLogs(new Diagnostics.LogsUploadFinishedListener() {
+        String reason = "Add your own reason why this log upload was triggered.";
+
+        mDiagnostics.uploadLogs(reason, new Diagnostics.LogsUploadFinishedListener() {
             @Override
             public void onLogsUploadFinished(final Diagnostics.LogsUploadFinishedStatus logsUploadFinishedStatus) {
                 new Handler(Looper.getMainLooper()).post(new Runnable() {

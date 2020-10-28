@@ -22,9 +22,9 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.util.Log;
 
-import com.blackberry.security.core.ErrorType;
-import com.blackberry.security.core.InitializationState;
-import com.blackberry.security.core.LibraryInit;
+import com.blackberry.security.ErrorType;
+import com.blackberry.security.InitializationState;
+import com.blackberry.security.SecurityControl;
 import com.blackberry.security.threat.ThreatLevel;
 import com.blackberry.security.threat.ThreatStatus;
 
@@ -37,7 +37,7 @@ public class BlackBerrySecurityAgent {
 
     private static final String TAG = BlackBerrySecurityAgent.class.getSimpleName();
 
-    LibraryInit mSecurity;
+    SecurityControl mSecurity;
     PyriteApplication mApp;
     private InitializationState currentState = InitializationState.INITIAL;
 
@@ -46,7 +46,7 @@ public class BlackBerrySecurityAgent {
     {
         mApp = app;
         // Initialize BlackBerry Security
-        mSecurity = new LibraryInit(mApp);
+        mSecurity = new SecurityControl(mApp);
         mSecurity.enableSecurity();
 
         // Register for updates from BlackBerry Security
@@ -73,7 +73,7 @@ public class BlackBerrySecurityAgent {
 
         //To receive notifications when the library initialization status changes.
         filter = new IntentFilter();
-        filter.addAction(LibraryInit.ACTION_INITIALIZATION_STATE_NOTIFICATION);
+        filter.addAction(SecurityControl.ACTION_INITIALIZATION_STATE_NOTIFICATION);
 
         mSecurity.registerReceiver(new BroadcastReceiver() {
             @Override
@@ -86,7 +86,7 @@ public class BlackBerrySecurityAgent {
 
             }
         }, filter);
-        Log.d(TAG, "Broadcast receiver has been registered for action " + LibraryInit.ACTION_INITIALIZATION_STATE_NOTIFICATION);
+        Log.d(TAG, "Broadcast receiver has been registered for action " + SecurityControl.ACTION_INITIALIZATION_STATE_NOTIFICATION);
     }
 
     //Handle the various initialization states.

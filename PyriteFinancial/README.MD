@@ -17,7 +17,7 @@ For additional information, see the [Developer Guide](https://docs.blackberry.co
 - Install the following:
 	- Android Studio 3.6.3 or later
 	- Gradle 3.6.3 or later
-	- Android SDK API level 24 or above
+- Android SDK API level 24 or above
 
 ## Getting Started
 
