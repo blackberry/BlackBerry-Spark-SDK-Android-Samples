@@ -19,11 +19,14 @@ package com.pyritefinancial.consumer.services;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.AlertDialog;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Spinner;
@@ -34,8 +37,6 @@ import com.blackberry.security.config.rules.DeviceSoftwareRules;
 import com.blackberry.security.identity.AppIdentity;
 import com.blackberry.security.util.Diagnostics;
 
-import org.w3c.dom.Text;
-
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.ZoneId;
@@ -45,11 +46,10 @@ import java.util.Date;
 //SettingsActivity demonstrates:
 // * Uploading of BlackBerry Spark SDK logs to a BlackBerry data center for troubleshooting.
 // * Displays the BlackBerry Spark SDK app instance identifier. This ID is to uniquely identify an
-//   app instance to your server.<br />Allows for manual display of DeviceChecksActivity.
-// * Allows customization of the minimum Android patch level used in device software scans.
-//   This is one of many rules that can be customized for each type of scan.
+//   app instance to your server.
+// * Allows for manual display of DeviceChecksActivity.
 
-public class SettingsActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
+public class SettingsActivity extends AppCompatActivity {
 
     private Diagnostics mDiagnostics;
     ManageRules mRules;
@@ -69,34 +69,8 @@ public class SettingsActivity extends AppCompatActivity implements AdapterView.O
         AppIdentity identity = new AppIdentity();
 
         //Display the BlackBerry Spark SDK app instance identifier. This ID is to uniquely identify an
-        //app instance to your server.<br />Allows for manual display of DeviceChecksActivity.
+        //app instance to your server. This identifier is never sent to BlackBerry.
         textViewUUID.setText(identity.getAppInstanceIdentifier());
-
-        //Load the patch level configured for scans from DeviceSoftwareRules.
-        //Default is Unix epoch.
-        DeviceSoftwareRules dsRules = mRules.getDeviceSoftwareRules();
-        Date patchDate = dsRules.getSecurityPatchMinimumDate();
-        LocalDate patchLocalDate = patchDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-        LocalDate now = LocalDate.now();
-
-        Period timeBetween = Period.between(patchLocalDate, now);
-
-        //Calculate the total number of months between now and the configured date.
-        int totalMonths = timeBetween.getMonths() + (12 * timeBetween.getYears());
-
-        Spinner spinnerPatchMonths = findViewById(R.id.spinnerPatchMonths);
-
-        //The sample UI displays from 1-24 months.
-        if (totalMonths >= 23 )
-        {
-            spinnerPatchMonths.setSelection(23);
-        }
-        else
-        {
-            spinnerPatchMonths.setSelection(totalMonths - 1);
-        }
-
-        spinnerPatchMonths.setOnItemSelectedListener(this);
     }
 
     public void onClickUploadLogs(View view)
@@ -121,31 +95,58 @@ public class SettingsActivity extends AppCompatActivity implements AdapterView.O
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
                     public void run() {
-                        new AlertDialog.Builder(SettingsActivity.this)
-                                .setTitle("Logs Upload")
-                                .setMessage("Logs Upload Result: " + logsUploadFinishedStatus)
-                                .show();
+                        //If the user closes the Settings activity and the app attempts to display one of the dialogs
+                        //below as the activity is finishing, a fatal exception will occur.  Check isfinishing to prevent this.
+                        if (!isFinishing()) {
+
+                            if (Diagnostics.LogsUploadFinishedStatus.COMPLETED == logsUploadFinishedStatus) {
+                                //Upload was a success, allow the user to copy the container ID to the clipboard.
+                                //This container ID will be required by BlackBerry Support to locate logs uploaded from this
+                                //application instance.
+                                androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(SettingsActivity.this);
+                                builder.setTitle("Logs Upload");
+                                builder.setMessage("Logs were uploaded using unique container ID: " + mDiagnostics.getBlackBerryAppContainerID()
+                                        + ". Reference this container ID when working with BlackBerry Support.");
+                                builder.setPositiveButton("Close", new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int id) {
+                                        dialog.dismiss();
+                                    }
+                                });
+
+                                //Allow access to the sample even if issues are found.
+                                builder.setNeutralButton("Copy Container ID", new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int id) {
+                                        ClipboardManager cbManager = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                                        ClipData cd = ClipData.newPlainText("Container ID", mDiagnostics.getBlackBerryAppContainerID());
+                                        cbManager.setPrimaryClip(cd);
+                                    }
+                                });
+                                builder.create().show();
+                            } else {
+                                //Log upload wasn't successful, display the result.
+                                new AlertDialog.Builder(SettingsActivity.this)
+                                        .setTitle("Logs Upload")
+                                        .setMessage("Logs Upload Result: " + logsUploadFinishedStatus)
+                                        .show();
+                            }
+                        }
                     }
                 });
             }
         });
     }
 
-    //Change the minimum Android patch level used in the device scan.  Patch levels lower than
-    //the minimum will be considered a threat.
-    @Override
-    public void onItemSelected(AdapterView<?> adapterView, View view, int pos, long id) {
-        //Set the DeviceSoftwareRules to use the new patch level value.
-        String month = (String)adapterView.getItemAtPosition(pos);
-
-        Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.MONTH, -(Integer.parseInt(month)));
-
-        DeviceSoftwareRules dsRules = mRules.getDeviceSoftwareRules();
-        dsRules.setSecurityPatchMinimumDate(cal.getTime());
-        mRules.setDeviceSoftwareRules(dsRules);
+    //Loads scan rules from a JSON file.
+    public void onLoadRules(View view)
+    {
+        Rules sr = new Rules();
+        sr.loadRules(this);
     }
 
-    @Override
-    public void onNothingSelected(AdapterView<?> adapterView) {}
+    //Converts the currently set scan rules to JSON that could be saved or uploaded to a server.
+    public void onSaveRules(View view)
+    {
+        Rules sr = new Rules();
+        sr.saveRules();
+    }
 }

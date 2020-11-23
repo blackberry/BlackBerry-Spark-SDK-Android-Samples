@@ -110,36 +110,45 @@
         app:layout_constraintTop_toBottomOf="@+id/textView26" />
 
     <TextView
-        android:id="@+id/textView30"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="20dp"
-        android:text="Configure Minimum Device Patch Level\nChoose Number of Months Previous To Allow"
-        android:textColor="@color/regularTextColor"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/buttonDisplayThreatStatus" />
-
-    <Spinner
-        android:id="@+id/spinnerPatchMonths"
-        android:layout_width="89dp"
-        android:layout_height="37dp"
-        android:layout_marginStart="10dp"
-        android:entries="@array/months"
-        app:layout_constraintBottom_toBottomOf="@+id/textView30"
-        app:layout_constraintStart_toEndOf="@+id/textView30" />
-
-    <TextView
         android:id="@+id/textView32"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="20dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="8dp"
         android:layout_marginEnd="20dp"
-        android:text="You can fine tune many scan options, this sample demonstrates setting the patch level."
+        android:text="You can fine tune many scan rules. The buttons below load and save all scan rules to and from JSON."
         android:textColor="@color/regularTextColor"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView30" />
+        app:layout_constraintTop_toBottomOf="@+id/buttonDisplayThreatStatus" />
+
+    <TextView
+        android:id="@+id/textView34"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:text="Load and save all scan rules."
+        app:layout_constraintStart_toStartOf="@+id/textView32"
+        app:layout_constraintTop_toBottomOf="@+id/textView32" />
+
+    <Button
+        android:id="@+id/buttonLoadScanOptions"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:onClick="onLoadRules"
+        android:text="Load"
+        app:layout_constraintStart_toStartOf="@+id/textView34"
+        app:layout_constraintTop_toBottomOf="@+id/textView34" />
+
+    <Button
+        android:id="@+id/buttonSaveScanOptions"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:onClick="onSaveRules"
+        android:text="Save"
+        app:layout_constraintStart_toEndOf="@+id/buttonLoadScanOptions"
+        app:layout_constraintTop_toTopOf="@+id/buttonLoadScanOptions" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

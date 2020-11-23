@@ -32,6 +32,7 @@ import com.blackberry.security.threat.ApkInfo;
 import com.blackberry.security.threat.Threat;
 import com.blackberry.security.threat.ThreatAppMalware;
 import com.blackberry.security.threat.ThreatDeviceSecurity;
+import com.blackberry.security.threat.ThreatDeviceSoftware;
 import com.blackberry.security.threat.ThreatLevel;
 import com.blackberry.security.threat.ThreatStatus;
 import com.blackberry.security.threat.ThreatType;
@@ -172,7 +173,7 @@ public class DeviceChecksActivity extends AppCompatActivity {
         }
 
         //Check OS security and display the result to the user.
-        Threat deviceOS = threatStatus.getThreat(ThreatType.DeviceSoftware);
+        ThreatDeviceSoftware deviceOS = (ThreatDeviceSoftware)threatStatus.getThreat(ThreatType.DeviceSoftware);
 
         ThreatLevel deviceOSThreatLevel = deviceOS.getRiskLevel();
 
@@ -201,6 +202,28 @@ public class DeviceChecksActivity extends AppCompatActivity {
 
             sbSecurityErrors.append(deviceOS.getInfo());
             sbSecurityErrors.append('\n');
+
+            //Check threats and build an error message to show to the user.
+            if (deviceOS.isDeviceManufacturerRestricted())
+            {
+                sbSecurityErrors.append("This device manufacturer is restricted.\n");
+            }
+
+            if (deviceOS.isDeviceModelRestricted())
+            {
+                sbSecurityErrors.append("This device model is restricted.\n");
+            }
+
+            if (deviceOS.isDeviceOSRestricted())
+            {
+                sbSecurityErrors.append("This device OS version is restricted.\n");
+            }
+
+            if (deviceOS.isDeviceSecurityPatchRestricted())
+            {
+                sbSecurityErrors.append("This device security patch level is too old.\n");
+            }
+
         }
 
         //Check device for malware and display the result to the user.

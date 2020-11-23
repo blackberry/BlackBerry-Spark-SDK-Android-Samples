@@ -133,6 +133,7 @@ To get help from BlackBerry and other developers or to provide feedback please j
 | IconActivity            | BlackBerry Spark SDK secure shared preference storage.<br />Enabling of threat data collection. |
 | LoginActivity           | Authenticates the user to Firebase, which is one of many identify providers that can be used with BlackBerry Spark SDK. |
 | MessageActivity         | Check if URLs, IP addresses or messages called or used within your application are safe. <br />Implement checks which help protect your app users from malicious websites, phishing attempts, malware, adware, and other web sources that pose a threat to your data. |
+| Rules                   | Demonstrates configuring rules and features.  Rules and features can be read in from or saved to JSON, which could be hosted on your server or made available via a REST call for remote configuration.  rules.json is an example of the format used in this sample. |
 | SettingsActivity        | Demonstrates uploading of BlackBerry Spark SDK logs to a BlackBerry data center for troubleshooting.<br />Displays the BlackBerry Spark SDK app instance identifier. This ID is to uniquely identify an app instance to your server.<br />Allows for manual display of DeviceChecksActivity.<br />Allows customization of the minimum Android patch level used in device software scans. This is one of many scanning rules that can be customized. |
 
 

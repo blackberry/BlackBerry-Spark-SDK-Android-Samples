@@ -1,0 +1,55 @@
+{
+    "MalwareScanRules": {
+        "MalwareUploadType": "WIFI",
+        "MalwareScanTrigger": "CONTINUOUS",
+        "MalwareUploadItemSizeLimit_None": -1,
+        "MalwareUploadItemSizeLimit_Cellular": 50,
+        "MalwareUploadItemSizeLimit_WiFi": 100,
+        "MalwareUploadItemSizeLimit_Cellular_WiFi": -1,
+        "MalwareUploadMonthlySizeLimit_None": -1,
+        "MalwareUploadMonthlySizeLimit_Cellular": 500,
+        "MalwareUploadMonthlySizeLimit_WiFi": 1000,
+        "MalwareUploadMonthlySizeLimit_Cellular_WiFi": -1
+    },
+    "ContentCheckerRules": {
+        "SafeBrowsing_CheckType": "CLOUD",
+        "SafeMessaging_CheckType": "CLOUD",
+        "AllowedDomainURLs": [],
+        "DisallowedDomainURLs": [],
+        "AllowedIPs": [],
+        "DisallowedIPs": []
+    },
+    "DeviceSecurityRules": {
+        "DeviceLockScreen_Check": "Enabled",
+        "DeveloperMode_Check": "Enabled",
+        "DeviceEncryption_Check": "Enabled",
+        "JailbreakDetection_Check": "Enabled",
+        "AndroidHWKeyVerifyBoot_Check": "Enabled",
+        "DebugDetection_Check": "Enabled",
+        "DebugDetection_EnforcementAction": "NOTIFY",
+        "HookDetection_Check": "Enabled"
+    },
+    "AndroidDeviceSoftwareRules": {
+        "DeviceSecurityPatchSoftware_Check": "Enabled",
+        "DeviceOSSoftware_Check": "Enabled",
+        "DeviceManufacturer_Check": "Enabled",
+        "DeviceModel_Check": "Enabled",
+        "ManufacturerDenyList": [],
+        "ModelDenyList": [],
+        "MinimumOSVersion": "0",
+        "SecurityPatchMinimumDate": 0
+    },
+    "DataCollectionRules": {
+        "DataCollectionEnabled": true,
+        "UploadType": "WIFI_WHILE_CHARGING",
+        "UploadMonthlyLimit": "LIMIT_10MB"
+    },
+    "Features": {
+        "AppMalware_Enabled": "ENABLED",
+        "AppSideload_Enabled": "ENABLED",
+        "DeviceSecurity_Enabled": "ENABLED",
+        "DeviceSoftware_Enabled": "ENABLED",
+        "SafeBrowsing_Enabled": "ENABLED",
+        "SafeMessaging_Enabled": "ENABLED"
+    }
+}
