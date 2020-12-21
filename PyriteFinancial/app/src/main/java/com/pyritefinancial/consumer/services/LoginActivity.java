@@ -51,7 +51,7 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
 
         //Receive any error message that may have occurred while logging in.
-        String errorMessage = (String)getIntent().getSerializableExtra("com.pyritefinancial.consumer.services.LoginActivity.message");
+        String errorMessage = (String)getIntent().getSerializableExtra(BlackBerrySecurityAgent.LOGIN_MESSAGE_EXTRA_NAME);
 
         if (errorMessage != null) {
             TextView tvErrorMessage = findViewById(R.id.textViewMessage);

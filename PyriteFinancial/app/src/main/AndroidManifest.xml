@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.pyritefinancial.consumer.services">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:name=".PyriteApplication"
         android:allowBackup="false"
@@ -10,28 +12,24 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="false"
         android:theme="@style/AppTheme.NoActionBar">
-        <activity android:name=".AccountBalanceActivity"></activity>
+        <activity android:name=".PINEntryActivity"></activity>
+        <activity android:name=".AccountBalanceActivity" />
         <activity android:name=".SettingsActivity" />
-        <activity
-            android:name=".MessageActivity" />
-        <activity
-            android:name=".MessageListActivity"/>
-        <activity
-            android:name=".IconActivity"/>
+        <activity android:name=".MessageActivity" />
+        <activity android:name=".MessageListActivity" />
+        <activity android:name=".IconActivity" />
         <activity
             android:name=".LoginActivity"
-            android:label="@string/title_activity_login" />
-
-        <!-- TODO Add your BlackBerry ClientID here - refer to README.MD for instructions. -->
+            android:label="@string/title_activity_login" /> 
+		<!-- TODO Add your BlackBerry ClientID here - refer to README.MD for instructions. -->
         <meta-data
             android:name="com.blackberry.security.ClientID"
             android:value="< YOUR_BLACKBERRY_APPID_CLIENT_ID_HERE >" />
 
         <activity
             android:name=".DeviceChecksActivity"
-            android:launchMode="singleTask"/>
-        <activity
-            android:name=".MainActivity">
+            android:launchMode="singleTask" />
+        <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -39,7 +37,5 @@
             </intent-filter>
         </activity>
     </application>
-
-    <uses-permission android:name="android.permission.INTERNET"/>
 
 </manifest>

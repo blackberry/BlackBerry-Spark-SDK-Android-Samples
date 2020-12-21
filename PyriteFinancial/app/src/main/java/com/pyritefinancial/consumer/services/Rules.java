@@ -19,6 +19,7 @@ package com.pyritefinancial.consumer.services;
 import android.content.Context;
 import android.text.format.DateFormat;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -31,22 +32,22 @@ import com.blackberry.security.config.ManageFeatures;
 import com.blackberry.security.config.ManageRules;
 import com.blackberry.security.config.rules.ContentCheckerRules;
 import com.blackberry.security.config.rules.DataCollectionRules;
+import com.blackberry.security.config.rules.DeviceOfflineRules;
 import com.blackberry.security.config.rules.DeviceSecurityRules;
 import com.blackberry.security.config.rules.DeviceSoftwareRules;
 import com.blackberry.security.config.rules.MalwareScanRules;
 import com.blackberry.security.detect.DeviceChecker;
+import com.blackberry.security.identity.AppIdentity;
 import com.blackberry.security.threat.ThreatType;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.ParseException;
-import java.text.ParsePosition;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 //Rules demonstrates:
 // * Reading and writing BlackBerry Spark SDK rules and features to and from JSON.
@@ -57,17 +58,35 @@ public class Rules {
 
     private static final String TAG = Rules.class.getSimpleName();
 
+    private Context mContext;
+
     public Rules()
     { }
 
     //Download a Rules JSON file.
     public void loadRules(Context context)
     {
+        mContext = context;
         RequestQueue queue = Volley.newRequestQueue(context);
 
-        //Points to an example rules.json on Github from this project.
-        //TODO:  Change this to BlackBerry Github
-        String url ="https://raw.githubusercontent.com/MSohm/Playground/master/rules.json";
+        //This URL points to an example rules.json on Github from this project.
+        //TODO - Comment out the line below if you are testing with the Pyrite Financial Server.
+        String url ="https://raw.githubusercontent.com/blackberry/BlackBerry-Spark-SDK-Android-Samples/master/PyriteFinancial/rules.json";
+
+        //This URL points to an instance of the Pyrite Financial Server, which can be used to generate
+        //the JSON used to configure this sample.
+        //Clone the server from https://github.com/blackberry/BlackBerry-Spark-SDK-Android-Samples
+        //This sample passed the authenticity ID to the server.  This ID is unique to this application,
+        //but remains constant on all installations.  This ID is never shared with BlackBerry.
+        //The application instance ID is a unique ID which is constant for a single activated instance of the application.
+        //This identifier is never shared or known by BlackBerry.
+        //TODO - Uncomment the lines below and enter your server address if you are testing with the Pryrite Financial Server.
+        /*
+        AppIdentity aID = new AppIdentity();
+        Map appIDs = aID.getApplicationAuthenticityIdentifiers();
+        String url ="http://<YOUR_SERVER_ADDRESS>:3000/rules?appAuthenticityID=" + appIDs.get(AppIdentity.AUTHENTICITY_ID)
+                + "&appInstanceID=" + aID.getAppInstanceIdentifier();
+        */
 
         StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
                 new Response.Listener<String>() {
@@ -98,10 +117,39 @@ public class Rules {
 
             //Parse and apply Malware Scan Rules.
             if (jsonRules.has("MalwareScanRules")) {
-                //Parse and apply the Malware Scan Rules.
                 JSONObject jsonMWScanRules = jsonRules.getJSONObject("MalwareScanRules");
 
-                //TODO: Finish onnce APIs to set Malware scan rules are in place.
+                MalwareScanRules.Builder rulesBuilder = new MalwareScanRules.Builder();
+
+                if (jsonMWScanRules.has("MalwareUploadType"))
+                {
+                    rulesBuilder.allowedUploadType(MalwareScanRules.UploadType.valueOf(jsonMWScanRules.getString("MalwareUploadType")));
+                }
+
+                if (jsonMWScanRules.has("MalwareScanTrigger"))
+                {
+                    rulesBuilder.scanTrigger(MalwareScanRules.MalwareScanTrigger.valueOf(jsonMWScanRules.getString("MalwareScanTrigger")));
+                }
+
+                //Set to 0 for unlimited upload size.
+                if (jsonMWScanRules.has("MalwareUploadItemSizeLimit_Cellular") && jsonMWScanRules.has("MalwareUploadMonthlySizeLimit_Cellular"))
+                {
+                    rulesBuilder.setUploadSizeLimits(MalwareScanRules.UploadType.CELLULAR, jsonMWScanRules.getInt("MalwareUploadItemSizeLimit_Cellular"),
+                            jsonMWScanRules.getInt("MalwareUploadMonthlySizeLimit_Cellular"));
+                }
+
+                //Set to 0 for unlimited upload size.
+                if (jsonMWScanRules.has("MalwareUploadItemSizeLimit_WiFi") && jsonMWScanRules.has("MalwareUploadMonthlySizeLimit_WiFi"))
+                {
+                    rulesBuilder.setUploadSizeLimits(MalwareScanRules.UploadType.WIFI, jsonMWScanRules.getInt("MalwareUploadItemSizeLimit_WiFi"),
+                            jsonMWScanRules.getInt("MalwareUploadMonthlySizeLimit_WiFi"));
+                }
+
+                // Build the rules object and set the new rules.
+                MalwareScanRules malwareScanRules = rulesBuilder.build();
+                manageRules.setMalwareScanRules(malwareScanRules);
+
+                Log.d(TAG, "Malware Scan Rules Saved.");
             }
 
             //Parse and apply Content Checker Rules.
@@ -333,11 +381,11 @@ public class Rules {
 
                 if (jsonDataCollectionRules.has("DataCollectionEnabled"))
                 {
-                    if (jsonDataCollectionRules.getBoolean("DataCollectionEnabled"))
+                    if ("Enabled".equalsIgnoreCase(jsonDataCollectionRules.getString("DataCollectionEnabled")))
                     {
                         dcRules.enableDataCollection();
                     }
-                    else
+                    else if ("Disabled".equalsIgnoreCase(jsonDataCollectionRules.getString("DataCollectionEnabled")))
                     {
                         dcRules.disableDataCollection();
                     }
@@ -356,6 +404,27 @@ public class Rules {
                 boolean rulesSaved = manageRules.setDataCollectionRules(dcRules);
                 Log.d(TAG, "Data Collection Rules Saved: " + rulesSaved);
             }
+
+            //Parse and apply Device Offline Rules.
+            if (jsonRules.has("DeviceOfflineRules")) {
+                DeviceOfflineRules doRules = manageRules.getDeviceOfflineRules();
+
+                JSONObject jsonDeviceOfflineRules = jsonRules.getJSONObject("DeviceOfflineRules");
+
+                if (jsonDeviceOfflineRules.has("MinutesToMedium"))
+                {
+                    doRules.minutesToMediumRule = jsonDeviceOfflineRules.getInt("MinutesToMedium");
+                }
+
+                if (jsonDeviceOfflineRules.has("MinutesToHigh"))
+                {
+                    doRules.minutesToHighRule = jsonDeviceOfflineRules.getInt("MinutesToHigh");
+                }
+
+                boolean rulesSaved = manageRules.setDeviceOfflineRules(doRules);
+                Log.d(TAG, "Device Offline Rules Saved: " + rulesSaved);
+            }
+
 
             //Parse and apply Features.
             if (jsonRules.has("Features"))
@@ -437,8 +506,14 @@ public class Rules {
 
             }
 
-        } catch (JSONException e) {
+            Toast toast = Toast.makeText(mContext, "Rules were loaded.", Toast.LENGTH_LONG);
+            toast.show();
+
+        } catch (JSONException | IllegalArgumentException e) {
             Log.e(TAG, "Failed to parse JSON. " + e.getStackTrace());
+
+            Toast toast = Toast.makeText(mContext, "Failed to parse JSON.", Toast.LENGTH_LONG);
+            toast.show();
         }
 
         //Trigger re-scans to pick up risks based on newly set rules.
@@ -471,6 +546,7 @@ public class Rules {
         DeviceSecurityRules deviceSecurityRules = manageRules.getDeviceSecurityRules();
         DeviceSoftwareRules deviceSoftwareRules = manageRules.getDeviceSoftwareRules();
         DataCollectionRules dcRules = manageRules.getDataCollectionRules();
+        DeviceOfflineRules doRules = manageRules.getDeviceOfflineRules();
 
         //Save the rules to JSON.
         try
@@ -479,14 +555,10 @@ public class Rules {
             JSONObject jsonMWScanRules = new JSONObject();
             jsonMWScanRules.put("MalwareUploadType", mwRules.getUploadType());
             jsonMWScanRules.put("MalwareScanTrigger", mwRules.getScanTrigger());
-            jsonMWScanRules.put("MalwareUploadItemSizeLimit_None", mwRules.getUploadItemSizeLimit(MalwareScanRules.UploadType.NONE));
             jsonMWScanRules.put("MalwareUploadItemSizeLimit_Cellular", mwRules.getUploadItemSizeLimit(MalwareScanRules.UploadType.CELLULAR));
             jsonMWScanRules.put("MalwareUploadItemSizeLimit_WiFi", mwRules.getUploadItemSizeLimit(MalwareScanRules.UploadType.WIFI));
-            jsonMWScanRules.put("MalwareUploadItemSizeLimit_Cellular_WiFi", mwRules.getUploadItemSizeLimit(MalwareScanRules.UploadType.CELLULAR_WIFI));
-            jsonMWScanRules.put("MalwareUploadMonthlySizeLimit_None", mwRules.getUploadMonthlySizeLimit(MalwareScanRules.UploadType.NONE));
             jsonMWScanRules.put("MalwareUploadMonthlySizeLimit_Cellular", mwRules.getUploadMonthlySizeLimit(MalwareScanRules.UploadType.CELLULAR));
             jsonMWScanRules.put("MalwareUploadMonthlySizeLimit_WiFi", mwRules.getUploadMonthlySizeLimit(MalwareScanRules.UploadType.WIFI));
-            jsonMWScanRules.put("MalwareUploadMonthlySizeLimit_Cellular_WiFi", mwRules.getUploadMonthlySizeLimit(MalwareScanRules.UploadType.CELLULAR_WIFI));
 
             //Convert ContentCheckerRules to JSON.
             JSONObject jsonCCRules = new JSONObject();
@@ -525,9 +597,23 @@ public class Rules {
 
             //Convert DataCollectionRules to JSON.
             JSONObject jsonDataCollectionRules = new JSONObject();
-            jsonDataCollectionRules.put("DataCollectionEnabled", dcRules.dataCollectionIsEnabled());
+
+            if (dcRules.dataCollectionIsEnabled())
+            {
+                jsonDataCollectionRules.put("DataCollectionEnabled","Enabled");
+            }
+            else
+            {
+                jsonDataCollectionRules.put("DataCollectionEnabled", "Disabled");
+            }
+
             jsonDataCollectionRules.put("UploadType", dcRules.getUploadType());
             jsonDataCollectionRules.put("UploadMonthlyLimit", dcRules.getUploadMonthlyLimit());
+
+            //Convert DeviceOfflineRules to JSON.
+            JSONObject jsonDeviceOfflineRules = new JSONObject();
+            jsonDeviceOfflineRules.put("MinutesToMedium", doRules.minutesToMediumRule);
+            jsonDeviceOfflineRules.put("MinutesToHigh", doRules.minutesToHighRule);
 
             //Convert ManageFeatures to JSON.
             JSONObject jsonFeatures = new JSONObject();
@@ -545,6 +631,7 @@ public class Rules {
             allRules.put("DeviceSecurityRules", jsonDeviceSecurityRules);
             allRules.put("AndroidDeviceSoftwareRules", jsonDeviceSoftwareRules);
             allRules.put("DataCollectionRules", jsonDataCollectionRules);
+            allRules.put("DeviceOfflineRules", jsonDeviceOfflineRules);
             allRules.put("Features", jsonFeatures);
 
             //Create compact JSON to send to a server.

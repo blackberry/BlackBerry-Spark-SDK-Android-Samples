@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- Copyright (c) 2020 BlackBerry Limited.
+    *
+    * Licensed under the Apache License, Version 2.0 (the "License");
+    * you may not use this file except in compliance with the License.
+    * You may obtain a copy of the License at
+    *
+    * http://www.apache.org/licenses/LICENSE-2.0
+    *
+    * Unless required by applicable law or agreed to in writing, software
+    * distributed under the License is distributed on an "AS IS" BASIS,
+    * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    * See the License for the specific language governing permissions and
+    * limitations under the License.
+    *
+    */
+-->
+
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".PINEntryActivity">
+
+    <ImageView
+        android:id="@+id/pinCircle5ImageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
+        android:contentDescription="Fifth digit"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/pinCircle4ImageView"
+        app:layout_constraintTop_toBottomOf="@+id/topMessageTextView"
+        app:srcCompat="@drawable/pin_not_entered_circle" />
+
+    <ImageView
+        android:id="@+id/pinCircle4ImageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
+        android:contentDescription="Fourth digit"
+        app:layout_constraintEnd_toStartOf="@+id/pinCircle5ImageView"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/pinCircle3ImageView"
+        app:layout_constraintTop_toBottomOf="@+id/topMessageTextView"
+        app:srcCompat="@drawable/pin_not_entered_circle" />
+
+    <ImageView
+        android:id="@+id/pinCircle3ImageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
+        android:contentDescription="Third digit"
+        app:layout_constraintEnd_toStartOf="@+id/pinCircle4ImageView"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/pinCircle2ImageView"
+        app:layout_constraintTop_toBottomOf="@+id/topMessageTextView"
+        app:srcCompat="@drawable/pin_not_entered_circle" />
+
+    <ImageView
+        android:id="@+id/pinCircle1ImageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
+        android:contentDescription="First digit"
+        app:layout_constraintEnd_toStartOf="@+id/pinCircle2ImageView"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintHorizontal_chainStyle="spread"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/topMessageTextView"
+        app:srcCompat="@drawable/pin_not_entered_circle" />
+
+    <TextView
+        android:id="@+id/topMessageTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:text="PIN Entry"
+        android:textAlignment="center"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+        android:textColor="@color/regularTextColor"
+        android:textSize="24sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/pinCircle2ImageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
+        android:contentDescription="Second digit"
+        app:layout_constraintEnd_toStartOf="@+id/pinCircle3ImageView"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/pinCircle1ImageView"
+        app:layout_constraintTop_toBottomOf="@+id/topMessageTextView"
+        app:srcCompat="@drawable/pin_not_entered_circle" />
+
+    <ImageView
+        android:id="@+id/oneImageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="70dp"
+        android:contentDescription="One"
+        android:onClick="onClickNumber"
+        app:layout_constraintEnd_toStartOf="@+id/twoImageView"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintHorizontal_chainStyle="spread"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/pinCircle1ImageView"
+        app:srcCompat="@drawable/one" />
+
+    <ImageView
+        android:id="@+id/twoImageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="Two"
+        android:onClick="onClickNumber"
+        app:layout_constraintEnd_toStartOf="@+id/threeImageView"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/oneImageView"
+        app:layout_constraintTop_toTopOf="@+id/oneImageView"
+        app:srcCompat="@drawable/two" />
+
+    <ImageView
+        android:id="@+id/threeImageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="Three"
+        android:onClick="onClickNumber"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/twoImageView"
+        app:layout_constraintTop_toTopOf="@+id/twoImageView"
+        app:srcCompat="@drawable/three" />
+
+    <ImageView
+        android:id="@+id/fourImageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:contentDescription="Four"
+        android:onClick="onClickNumber"
+        app:layout_constraintEnd_toStartOf="@+id/fiveImageView"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/oneImageView"
+        app:srcCompat="@drawable/four" />
+
+    <ImageView
+        android:id="@+id/fiveImageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="Five"
+        android:onClick="onClickNumber"
+        app:layout_constraintEnd_toStartOf="@+id/sixImageView"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/fourImageView"
+        app:layout_constraintTop_toTopOf="@+id/fourImageView"
+        app:srcCompat="@drawable/five" />
+
+    <ImageView
+        android:id="@+id/sixImageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="Six"
+        android:onClick="onClickNumber"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/fiveImageView"
+        app:layout_constraintTop_toTopOf="@+id/fiveImageView"
+        app:srcCompat="@drawable/six" />
+
+    <ImageView
+        android:id="@+id/sevenImageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:contentDescription="Seven"
+        android:onClick="onClickNumber"
+        app:layout_constraintEnd_toStartOf="@+id/eightImageView"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/fourImageView"
+        app:srcCompat="@drawable/seven" />
+
+    <ImageView
+        android:id="@+id/eightImageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="Eight"
+        android:onClick="onClickNumber"
+        app:layout_constraintEnd_toStartOf="@+id/nineImageView"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/sevenImageView"
+        app:layout_constraintTop_toTopOf="@+id/sevenImageView"
+        app:srcCompat="@drawable/eight" />
+
+    <ImageView
+        android:id="@+id/nineImageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="Nine"
+        android:onClick="onClickNumber"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/eightImageView"
+        app:layout_constraintTop_toTopOf="@+id/eightImageView"
+        app:srcCompat="@drawable/nine" />
+
+    <ImageView
+        android:id="@+id/zeroImageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:contentDescription="Zero"
+        android:onClick="onClickNumber"
+        app:layout_constraintStart_toStartOf="@+id/eightImageView"
+        app:layout_constraintTop_toBottomOf="@+id/eightImageView"
+        app:srcCompat="@drawable/zero" />
+
+    <ImageView
+        android:id="@+id/backImageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:contentDescription="Backspace"
+        android:onClick="onClickNumber"
+        app:layout_constraintStart_toStartOf="@+id/nineImageView"
+        app:layout_constraintTop_toBottomOf="@+id/nineImageView"
+        app:srcCompat="@drawable/back" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

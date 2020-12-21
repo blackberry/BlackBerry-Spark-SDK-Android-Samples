@@ -20,13 +20,22 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Bundle;
 import android.util.Log;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
 
 import com.blackberry.security.ErrorType;
 import com.blackberry.security.InitializationState;
 import com.blackberry.security.SecurityControl;
 import com.blackberry.security.threat.ThreatLevel;
 import com.blackberry.security.threat.ThreatStatus;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GetTokenResult;
 
 //BlackBerrySecurityAgent demonstrates:
 //Initialization of BlackBerry Spark SDK.
@@ -35,7 +44,17 @@ import com.blackberry.security.threat.ThreatStatus;
 
 public class BlackBerrySecurityAgent {
 
+    public static final String PIN_REQUEST_TYPE_EXTRA_NAME = "com.pyritefinancial.consumer.services.PINEntryActivit.requestType";
+    public static final String LOGIN_MESSAGE_EXTRA_NAME = "com.pyritefinancial.consumer.services.LoginActivity.message";
+
+    public static final int PIN_REQUEST_TYPE_CREATE = 1000;
+    public static final int PIN_REQUEST_TYPE_ENTER = 2000;
+    public static final int PIN_REQUEST_TYPE_REENTER = 3000;
+
+
     private static final String TAG = BlackBerrySecurityAgent.class.getSimpleName();
+
+    private int mPINEntryAttempts = 0;
 
     SecurityControl mSecurity;
     PyriteApplication mApp;
@@ -47,7 +66,13 @@ public class BlackBerrySecurityAgent {
         mApp = app;
         // Initialize BlackBerry Security
         mSecurity = new SecurityControl(mApp);
-        mSecurity.enableSecurity();
+        Bundle configuration = new Bundle();
+        //This example enables the BlackBerry Spark SDK's password feature.
+        //This optional feature enables a user to set an application password or PIN during setup which
+        //is then required to subsequently login to the application. Requiring an application password
+        //further protects access to the runtime's Secure Storage and controls authorized access when the device is off-line.
+        configuration.putBoolean(SecurityControl.CONFIGURATION_KEY_AUTHENTICATION_REQUIRED, true);
+        mSecurity.enableSecurity(configuration);
 
         // Register for updates from BlackBerry Security
         registerForThreatUpdates();
@@ -101,6 +126,28 @@ public class BlackBerrySecurityAgent {
                 Log.d(TAG, "onUpdateState INITIAL");
                 break;
 
+            case AUTHENTICATION_SETUP_REQUIRED:
+                Log.d(TAG, "onUpdateState AUTHENTICATION_SETUP_REQUIRED");
+                requestOrCreatePIN(PIN_REQUEST_TYPE_CREATE);
+                break;
+
+            case AUTHENTICATION_REQUIRED:
+                Log.d(TAG, "onUpdateState AUTHENTICATION_REQUIRED");
+
+                if (mPINEntryAttempts == 0) {
+                    requestOrCreatePIN(PIN_REQUEST_TYPE_ENTER);
+                }
+                else
+                {
+                    //This sample does not limit the number of attempts a user can use to try to
+                    //enter their PIN.  For added security, you could limit this to a maximum
+                    //amount and call SecurityControl.deactivate() to delete data stored
+                    // in BlackBerry Spark storage when the user reaches that threshold.
+                    requestOrCreatePIN(PIN_REQUEST_TYPE_REENTER);
+                }
+                mPINEntryAttempts++;
+                break;
+
             case REGISTRATION:
                 Log.d(TAG, "onUpdateState REGISTRATION");
                 //The Firebase token used in this sample will be valid for 1 hour.
@@ -112,6 +159,9 @@ public class BlackBerrySecurityAgent {
                 break;
 
             case ACTIVE:
+                //Reset PIN entry counter after a successful login.
+                mPINEntryAttempts = 0;
+
                 // As soon as BlackBerry Spark SDK is in active state we can check current threat status.
                 Log.d(TAG, "onUpdateState ACTIVE");
                 //Log in was successful.  Display the icon screen.
@@ -146,13 +196,55 @@ public class BlackBerrySecurityAgent {
         }
     }
 
-    //Request the user log in.  Display the Login Activity.
-    private void requestLogin(String message)
+    //Request the user create or enter their PIN.
+    private void requestOrCreatePIN(int pinRequestType)
     {
-        Intent loginIntent = new Intent(mApp, LoginActivity.class);
-        loginIntent.putExtra("com.pyritefinancial.consumer.services.LoginActivity.message", message);
-        loginIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        mApp.startActivity(loginIntent);
+        Intent pinEntryIntent = new Intent(mApp, PINEntryActivity.class);
+        pinEntryIntent.putExtra(BlackBerrySecurityAgent.PIN_REQUEST_TYPE_EXTRA_NAME, pinRequestType);
+        pinEntryIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        mApp.startActivity(pinEntryIntent);
+    }
+
+    //Request the user log in.  Display the Login Activity.
+    private void requestLogin(final String message)
+    {
+        FirebaseAuth fbAuth;
+        FirebaseUser fbUser;
+
+        // Initialize Firebase Auth
+        fbAuth = FirebaseAuth.getInstance();
+        fbUser = fbAuth.getCurrentUser();
+
+        if (fbUser != null)
+        {
+            //User is already logged in.  Get the Firebase ID Token.
+            fbUser.getIdToken(false)
+                    .addOnCompleteListener(new OnCompleteListener<GetTokenResult>() {
+                        public void onComplete(@NonNull Task<GetTokenResult> task) {
+                            if (task.isSuccessful()) {
+                                //Firebase Id Token was received.  This token will be valid for 1 hour.
+                                String idToken = task.getResult().getToken();
+                                doLogin(idToken);
+                            } else {
+                                // Failed to get Firebase Id token.
+                                Log.w(TAG, "getIdToken:failure", task.getException());
+
+                                //Their account could be invalid.  Get them to enter their credentials.
+                                Intent loginIntent = new Intent(mApp, LoginActivity.class);
+                                loginIntent.putExtra(LOGIN_MESSAGE_EXTRA_NAME, message);
+                                loginIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                mApp.startActivity(loginIntent);
+                            }
+                        }
+                    });
+        }
+        else
+        {
+            Intent loginIntent = new Intent(mApp, LoginActivity.class);
+            loginIntent.putExtra(LOGIN_MESSAGE_EXTRA_NAME, message);
+            loginIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            mApp.startActivity(loginIntent);
+        }
     }
 
     //Display the Device Checks Activity.
