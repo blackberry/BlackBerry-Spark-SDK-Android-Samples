@@ -1,0 +1,71 @@
+<!-- /*
+ * Copyright (c) 2020 BlackBerry Limited. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */ -->
+
+ <!DOCTYPE html>
+ <html>
+ 
+ <head>
+   <title><%= title %></title>
+   <link rel='stylesheet' href='/stylesheets/style.css' />
+ </head>
+ 
+ <body>
+   <% const instanceKeys = Object.keys(savedAppInstanceIds) %>
+   <% const authenticityKeys = Object.keys(savedAppAuthicityIDs) %>
+   <h1><%= title %></h1>
+   <p>This page shows the App Authenticity IDs posted to the server by the Pyrite App when trying to get the rules</p>
+   <table id="dataTable">
+    <thead>
+        <tr>
+            <th>App Instance ID</th>
+            <th>Number of times App Instance ID reported</th>
+        </tr>
+    </thead>
+    <tbody>
+      <% for(var i=0; i < instanceKeys.length; i++) { %>
+        <tr>
+          <td><%= instanceKeys[i] %></td>
+          <td><%= savedAppInstanceIds[instanceKeys[i]]["count"] %></td>
+        </tr>
+      <% } %>
+    </tbody>
+  </table>
+<br>
+<br>
+  <table id="dataTable">
+    <thead>
+        <tr>
+            <th>App Authenticity ID</th>
+            <th>Number of times App Authenticity ID reported uniquely</th>
+            <th>App Instance IDs which reported the Authenticity ID</th>
+        </tr>
+    </thead>
+    <tbody>
+      <% for(var i=0; i < authenticityKeys.length; i++) { %>
+        <tr>
+          <td><%= authenticityKeys[i] %></td>
+          <td><%= savedAppAuthicityIDs[authenticityKeys[i]]["count"] %></td>
+          <td><%= savedAppAuthicityIDs[authenticityKeys[i]]["appInstanceIds"] %></td>
+        </tr>
+      <% } %>
+    </tbody>
+  </table>
+
+   
+  </body>
+ 
+</html>
+ 
