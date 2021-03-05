@@ -24,30 +24,27 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.Spinner;
+import android.widget.CompoundButton;
+import android.widget.Switch;
 import android.widget.TextView;
 
+import com.blackberry.security.auth.AppAuthentication;
 import com.blackberry.security.config.ManageRules;
-import com.blackberry.security.config.rules.DeviceSoftwareRules;
+import com.blackberry.security.content.Preferences;
 import com.blackberry.security.identity.AppIdentity;
 import com.blackberry.security.util.Diagnostics;
 
-import java.time.LocalDate;
-import java.time.Period;
-import java.time.ZoneId;
-import java.util.Calendar;
-import java.util.Date;
-
 //SettingsActivity demonstrates:
-// * Uploading of BlackBerry Spark SDK logs to a BlackBerry data center for troubleshooting.
-// * Displays the BlackBerry Spark SDK app instance identifier. This ID is to uniquely identify an
+// Uploading of BlackBerry Spark SDK logs to a BlackBerry data center for troubleshooting.
+// Displays the BlackBerry Spark SDK app instance identifier. This ID is to uniquely identify an
 //   app instance to your server.
-// * Allows for manual display of DeviceChecksActivity.
+// Allows for manual display of DeviceChecksActivity.
+// Enabling and disabling of biometric authentication.
 
 public class SettingsActivity extends AppCompatActivity {
 
@@ -71,6 +68,59 @@ public class SettingsActivity extends AppCompatActivity {
         //Display the BlackBerry Spark SDK app instance identifier. This ID is to uniquely identify an
         //app instance to your server. This identifier is never sent to BlackBerry.
         textViewUUID.setText(identity.getAppInstanceIdentifier());
+
+        Switch biometricSwitch = findViewById(R.id.biometricSwitch);
+        AppAuthentication appAuth = new AppAuthentication();
+        if (appAuth.isBiometricsSetup())
+        {
+            biometricSwitch.setChecked(true);
+        }
+
+        //Configure or disable biometric authentication.
+        biometricSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                AppAuthentication appAuth = new AppAuthentication();
+
+                //Read the preference from a BlackBerry Spark SDK secure preference file.
+                Preferences p = new Preferences();
+                SharedPreferences prefs = p.getSharedPreferences(BlackBerrySecurityAgent.SHARED_PREFS_NAME, MODE_PRIVATE);
+
+                if (isChecked) {
+                    if (appAuth.isBiometricsAvailable()) {
+                        prefs.edit().putBoolean(BlackBerrySecurityAgent.BIOMETRIC_AUTH_OPT_OUT, false).commit();
+
+                        if (!appAuth.setupBiometrics()) {
+                            AlertDialog alertDialog = new AlertDialog.Builder(SettingsActivity.this).create();
+                            alertDialog.setTitle("Error!");
+                            alertDialog.setMessage("Failed to start biometric setup.");
+                            alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                                    new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            dialog.dismiss();
+                                        }
+                                    });
+                            alertDialog.show();
+                            buttonView.setChecked(false);
+                        }
+                    } else {
+                        AlertDialog alertDialog = new AlertDialog.Builder(SettingsActivity.this).create();
+                        alertDialog.setTitle("Error!");
+                        alertDialog.setMessage("Biometric authentication is not available on your device.");
+                        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                                new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        dialog.dismiss();
+                                    }
+                                });
+                        alertDialog.show();
+                        buttonView.setChecked(false);
+                    }
+                } else {
+                    prefs.edit().putBoolean(BlackBerrySecurityAgent.BIOMETRIC_AUTH_OPT_OUT, true).commit();
+                    appAuth.deactivateBiometrics();
+                }
+            }
+        });
     }
 
     public void onClickUploadLogs(View view)

@@ -22,13 +22,13 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
 import com.blackberry.security.ErrorType;
 import com.blackberry.security.InitializationState;
 import com.blackberry.security.SecurityControl;
+import com.blackberry.security.auth.AppAuthentication;
 import com.blackberry.security.threat.ThreatLevel;
 import com.blackberry.security.threat.ThreatStatus;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -42,7 +42,7 @@ import com.google.firebase.auth.GetTokenResult;
 //Registration of broadcast receivers to receive notifications of the change of the device threat level.
 //Triggers an alert using DeviceChecksActivity to warn the user if the threat level is medium, high or critical.
 
-public class BlackBerrySecurityAgent {
+public class BlackBerrySecurityAgent extends BroadcastReceiver{
 
     public static final String PIN_REQUEST_TYPE_EXTRA_NAME = "com.pyritefinancial.consumer.services.PINEntryActivit.requestType";
     public static final String LOGIN_MESSAGE_EXTRA_NAME = "com.pyritefinancial.consumer.services.LoginActivity.message";
@@ -51,6 +51,8 @@ public class BlackBerrySecurityAgent {
     public static final int PIN_REQUEST_TYPE_ENTER = 2000;
     public static final int PIN_REQUEST_TYPE_REENTER = 3000;
 
+    public static final String SHARED_PREFS_NAME = "PyriteSharedPrefs";
+    public static final String BIOMETRIC_AUTH_OPT_OUT = "BiometricAuthOptOut";
 
     private static final String TAG = BlackBerrySecurityAgent.class.getSimpleName();
 
@@ -81,41 +83,36 @@ public class BlackBerrySecurityAgent {
     private void registerForThreatUpdates() {
 
         //Register broadcast receivers sent by the BlackBerry Spark SDK.
-
-        //To receive notifications when the threat status changes.
+        //Filters to receive notifications when the threat status and library initialization status changes.
         IntentFilter filter = new IntentFilter();
         filter.addAction(ThreatStatus.ACTION_THREAT_STATE_NOTIFICATION);
-
-        mSecurity.registerReceiver(new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-
-                displayThreatStatusResults();
-
-            }
-        }, filter);
-        Log.d(TAG, "Broadcast receiver has been registered for action " + ThreatStatus.ACTION_THREAT_STATE_NOTIFICATION);
-
-        //To receive notifications when the library initialization status changes.
-        filter = new IntentFilter();
         filter.addAction(SecurityControl.ACTION_INITIALIZATION_STATE_NOTIFICATION);
+        mSecurity.registerReceiver(this, filter);
+        Log.d(TAG, "Broadcast receiver has been registered for actions.");
 
-        mSecurity.registerReceiver(new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
+    }
 
-                InitializationState state = (InitializationState) intent.getSerializableExtra(InitializationState.KEY_SERIALIZABLE);
-                ErrorType error = (ErrorType)intent.getSerializableExtra(InitializationState.KEY_ERRORTYPE);
-                int httpStatus = intent.getIntExtra(InitializationState.KEY_HTTPSTATUSCODE, 0);
-                updateState(state, error, httpStatus);
+    @Override
+    public void onReceive(Context context, Intent intent) {
+        String action = intent.getAction();
 
-            }
-        }, filter);
-        Log.d(TAG, "Broadcast receiver has been registered for action " + SecurityControl.ACTION_INITIALIZATION_STATE_NOTIFICATION);
+        if (ThreatStatus.ACTION_THREAT_STATE_NOTIFICATION.equals(action)) {
+            displayThreatStatusResults();
+        }
+        else if (SecurityControl.ACTION_INITIALIZATION_STATE_NOTIFICATION.equals(action)) {
+            InitializationState state = (InitializationState) intent.getSerializableExtra(InitializationState.KEY_SERIALIZABLE);
+            ErrorType error = (ErrorType)intent.getSerializableExtra(InitializationState.KEY_ERRORTYPE);
+            int httpStatus = intent.getIntExtra(InitializationState.KEY_HTTPSTATUSCODE, 0);
+            boolean biometryCancelled = intent.getBooleanExtra(InitializationState.KEY_BIOMETRY_CANCELLED, false);
+            updateState(state, error, httpStatus, biometryCancelled);
+        }
+        else {
+            Log.e(TAG, "onReceive: unknown action " + action);
+        }
     }
 
     //Handle the various initialization states.
-    public void updateState(InitializationState state, ErrorType error, int httpStatus) {
+    public void updateState(InitializationState state, ErrorType error, int httpStatus, boolean biometryCancelled) {
 
         //The sample doesn't do anything with 'currentState' other than use it for logging.
         Log.d(TAG, "updateState: state " + currentState + " -> " + state);
@@ -135,7 +132,18 @@ public class BlackBerrySecurityAgent {
                 Log.d(TAG, "onUpdateState AUTHENTICATION_REQUIRED");
 
                 if (mPINEntryAttempts == 0) {
-                    requestOrCreatePIN(PIN_REQUEST_TYPE_ENTER);
+                    AppAuthentication appAuth = new AppAuthentication();
+                    //Initially prompt for biometric authentication if it has been set up.
+                    //Otherwise, fall back to PIN.
+                    if(appAuth.isBiometricsSetup() && !biometryCancelled) {
+                        if(!appAuth.promptBiometrics()) {
+                            requestOrCreatePIN(PIN_REQUEST_TYPE_ENTER);
+                            mPINEntryAttempts++;
+                        }
+                    } else {
+                        requestOrCreatePIN(PIN_REQUEST_TYPE_ENTER);
+                        mPINEntryAttempts++;
+                    }
                 }
                 else
                 {
@@ -144,8 +152,9 @@ public class BlackBerrySecurityAgent {
                     //amount and call SecurityControl.deactivate() to delete data stored
                     // in BlackBerry Spark storage when the user reaches that threshold.
                     requestOrCreatePIN(PIN_REQUEST_TYPE_REENTER);
+                    mPINEntryAttempts++;
                 }
-                mPINEntryAttempts++;
+
                 break;
 
             case REGISTRATION:

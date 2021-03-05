@@ -29,7 +29,6 @@ import android.widget.TextView;
 
 import com.blackberry.security.detect.DeviceChecker;
 import com.blackberry.security.threat.ApkInfo;
-import com.blackberry.security.threat.Threat;
 import com.blackberry.security.threat.ThreatAppMalware;
 import com.blackberry.security.threat.ThreatDeviceSecurity;
 import com.blackberry.security.threat.ThreatDeviceSoftware;

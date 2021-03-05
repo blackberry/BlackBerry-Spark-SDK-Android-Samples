@@ -93,10 +93,10 @@
         android:id="@+id/textViewUUID"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="5dp"
+        android:layout_marginStart="20dp"
         android:textColor="@color/regularTextColor"
-        app:layout_constraintBottom_toBottomOf="@+id/textView26"
-        app:layout_constraintStart_toEndOf="@+id/textView26" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView26" />
 
     <Button
         android:id="@+id/buttonDisplayThreatStatus"
@@ -107,7 +107,7 @@
         android:onClick="onDisplayThreatStatus"
         android:text="Display Threat Status"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView26" />
+        app:layout_constraintTop_toBottomOf="@+id/textViewUUID" />
 
     <TextView
         android:id="@+id/textView32"
@@ -150,5 +150,17 @@
         android:text="Save"
         app:layout_constraintStart_toEndOf="@+id/buttonLoadScanOptions"
         app:layout_constraintTop_toTopOf="@+id/buttonLoadScanOptions" />
+
+    <Switch
+        android:id="@+id/biometricSwitch"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="20dp"
+        android:text="Enable Biometric Authentication"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/buttonLoadScanOptions" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -3,6 +3,7 @@
     package="com.pyritefinancial.consumer.services">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.USE_FINGERPRINT"/>
 
     <application
         android:name=".PyriteApplication"
@@ -20,11 +21,11 @@
         <activity android:name=".IconActivity" />
         <activity
             android:name=".LoginActivity"
-            android:label="@string/title_activity_login" /> 
-		<!-- TODO Add your BlackBerry ClientID here - refer to README.MD for instructions. -->
+            android:label="@string/title_activity_login" />
+        <!-- TODO Add your BlackBerry ClientID here - refer to README.MD for instructions. -->
         <meta-data
             android:name="com.blackberry.security.ClientID"
-            android:value="< YOUR_BLACKBERRY_APPID_CLIENT_ID_HERE >" />
+            android:value=< YOUR_BLACKBERRY_APPID_CLIENT_ID_HERE > />
 
         <activity
             android:name=".DeviceChecksActivity"

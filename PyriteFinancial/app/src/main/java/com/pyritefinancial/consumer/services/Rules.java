@@ -17,7 +17,6 @@ package com.pyritefinancial.consumer.services;
  */
 
 import android.content.Context;
-import android.text.format.DateFormat;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -37,7 +36,6 @@ import com.blackberry.security.config.rules.DeviceSecurityRules;
 import com.blackberry.security.config.rules.DeviceSoftwareRules;
 import com.blackberry.security.config.rules.MalwareScanRules;
 import com.blackberry.security.detect.DeviceChecker;
-import com.blackberry.security.identity.AppIdentity;
 import com.blackberry.security.threat.ThreatType;
 
 import org.json.JSONArray;
@@ -47,7 +45,6 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 //Rules demonstrates:
 // * Reading and writing BlackBerry Spark SDK rules and features to and from JSON.
@@ -413,12 +410,12 @@ public class Rules {
 
                 if (jsonDeviceOfflineRules.has("MinutesToMedium"))
                 {
-                    doRules.minutesToMediumRule = jsonDeviceOfflineRules.getInt("MinutesToMedium");
+                    doRules.setMinutesToMediumThreatLevel(jsonDeviceOfflineRules.getInt("MinutesToMedium"));
                 }
 
                 if (jsonDeviceOfflineRules.has("MinutesToHigh"))
                 {
-                    doRules.minutesToHighRule = jsonDeviceOfflineRules.getInt("MinutesToHigh");
+                    doRules.setMinutesToHighThreatLevel(jsonDeviceOfflineRules.getInt("MinutesToHigh"));
                 }
 
                 boolean rulesSaved = manageRules.setDeviceOfflineRules(doRules);
@@ -612,8 +609,8 @@ public class Rules {
 
             //Convert DeviceOfflineRules to JSON.
             JSONObject jsonDeviceOfflineRules = new JSONObject();
-            jsonDeviceOfflineRules.put("MinutesToMedium", doRules.minutesToMediumRule);
-            jsonDeviceOfflineRules.put("MinutesToHigh", doRules.minutesToHighRule);
+            jsonDeviceOfflineRules.put("MinutesToMedium", doRules.getMinutesToMediumThreatLevel());
+            jsonDeviceOfflineRules.put("MinutesToHigh", doRules.getMinutesToHighThreatLevel());
 
             //Convert ManageFeatures to JSON.
             JSONObject jsonFeatures = new JSONObject();

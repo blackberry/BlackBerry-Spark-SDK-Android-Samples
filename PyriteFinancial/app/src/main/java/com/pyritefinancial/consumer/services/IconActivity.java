@@ -28,6 +28,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import com.blackberry.security.auth.AppAuthentication;
 import com.blackberry.security.config.ManageRules;
 import com.blackberry.security.config.rules.DataCollectionRules;
 import com.blackberry.security.content.Preferences;
@@ -35,10 +36,10 @@ import com.blackberry.security.content.Preferences;
 //IconActivity demonstrates:
 // BlackBerry Spark SDK secure shared preference storage.
 // Enabling of threat data collection.
+// Enabling of biometric authentication.
 
 public class IconActivity extends AppCompatActivity {
 
-    private static final String SHARED_PREFS_NAME = "PyriteSharedPrefs";
     private static final String THREAT_COLLECTION_ENABLED = "ThreatCollectionEnabled";
 
     @Override
@@ -50,7 +51,9 @@ public class IconActivity extends AppCompatActivity {
 
         //Read the preference from a BlackBerry Spark SDK secure preference file.
         Preferences p = new Preferences();
-        SharedPreferences prefs = p.getSharedPreferences(SHARED_PREFS_NAME, MODE_PRIVATE);
+        SharedPreferences prefs = p.getSharedPreferences(BlackBerrySecurityAgent.SHARED_PREFS_NAME, MODE_PRIVATE);
+
+        final boolean bioOptedOut = prefs.getBoolean(BlackBerrySecurityAgent.BIOMETRIC_AUTH_OPT_OUT, false);
 
         //Check if the user has agreed to anonymous threat data collection.
         if (prefs.contains(THREAT_COLLECTION_ENABLED)) {
@@ -70,9 +73,68 @@ public class IconActivity extends AppCompatActivity {
                 public void onClick(DialogInterface dialog, int id) {
                     //Store the preference in a BlackBerry Spark SDK secure preference file.
                     Preferences p = new Preferences();
-                    SharedPreferences prefs = p.getSharedPreferences(SHARED_PREFS_NAME, MODE_PRIVATE);
+                    SharedPreferences prefs = p.getSharedPreferences(BlackBerrySecurityAgent.SHARED_PREFS_NAME, MODE_PRIVATE);
                     prefs.edit().putBoolean(THREAT_COLLECTION_ENABLED, true).commit();
                     enableThreatCollection();
+
+                    if (!bioOptedOut) {
+                        doBiometricsSetup();
+                    }
+
+                    dialog.dismiss();
+                }
+            });
+            builder.setNeutralButton("Ask Me Later", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    if (!bioOptedOut) {
+                        doBiometricsSetup();
+                    }
+                    dialog.dismiss();
+                }
+            });
+            builder.setNegativeButton("Disable", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    //Store the preference in a BlackBerry Spark SDK secure preference file.
+                    Preferences p = new Preferences();
+                    SharedPreferences prefs = p.getSharedPreferences(BlackBerrySecurityAgent.SHARED_PREFS_NAME, MODE_PRIVATE);
+                    prefs.edit().putBoolean(THREAT_COLLECTION_ENABLED, false).commit();
+
+                    if (!bioOptedOut) {
+                        doBiometricsSetup();
+                    }
+                    dialog.dismiss();
+                }
+            });
+            builder.create().show();
+        }
+    }
+
+    //Sets up biometric authentication if it hasn't be set up yet and is supported by the device.
+    private void doBiometricsSetup()
+    {
+        final AppAuthentication appAuth = new AppAuthentication();
+
+        //Check if biometrics is available and hasn't been set up yet.
+        if (appAuth.isBiometricsAvailable() && !appAuth.isBiometricsSetup()) {
+            //Ask user if they wish to enable biometric authentication.
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("Enable Biometric Authentication?");
+            builder.setMessage("The BlackBerry Spark SDK supports biometric authentication.  Do you wish to set this up now?");
+            builder.setPositiveButton("Enable", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    //Enable biometric authentication.
+                    if (!appAuth.setupBiometrics()) {
+                        android.app.AlertDialog alertDialog = new android.app.AlertDialog.Builder(IconActivity.this).create();
+                        alertDialog.setTitle("Error!");
+                        alertDialog.setMessage("Failed to start biometric setup.");
+                        alertDialog.setButton(android.app.AlertDialog.BUTTON_NEUTRAL, "OK",
+                                new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        dialog.dismiss();
+                                    }
+                                });
+                        alertDialog.show();
+                    }
                     dialog.dismiss();
                 }
             });
@@ -83,14 +145,13 @@ public class IconActivity extends AppCompatActivity {
             });
             builder.setNegativeButton("Disable", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
-                    //Store the preference in a BlackBerry Spark SDK secure preference file.
+                    //Store their preference in a BlackBerry Spark SDK secure preference file.
                     Preferences p = new Preferences();
-                    SharedPreferences prefs = p.getSharedPreferences(SHARED_PREFS_NAME, MODE_PRIVATE);
-                    prefs.edit().putBoolean(THREAT_COLLECTION_ENABLED, false).commit();
+                    SharedPreferences prefs = p.getSharedPreferences(BlackBerrySecurityAgent.SHARED_PREFS_NAME, MODE_PRIVATE);
+                    prefs.edit().putBoolean(BlackBerrySecurityAgent.BIOMETRIC_AUTH_OPT_OUT, true).commit();
                     dialog.dismiss();
                 }
             });
-
             builder.create().show();
         }
     }
