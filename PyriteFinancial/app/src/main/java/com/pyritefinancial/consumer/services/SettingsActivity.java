@@ -146,7 +146,7 @@ public class SettingsActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         //If the user closes the Settings activity and the app attempts to display one of the dialogs
-                        //below as the activity is finishing, a fatal exception will occur.  Check isfinishing to prevent this.
+                        //below as the activity is finishing, a fatal exception will occur.  Check isFinishing to prevent this.
                         if (!isFinishing()) {
 
                             if (Diagnostics.LogsUploadFinishedStatus.COMPLETED == logsUploadFinishedStatus) {

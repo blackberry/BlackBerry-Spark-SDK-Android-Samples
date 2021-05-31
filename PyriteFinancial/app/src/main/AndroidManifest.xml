@@ -22,10 +22,10 @@
         <activity
             android:name=".LoginActivity"
             android:label="@string/title_activity_login" />
-        <!-- TODO Add your BlackBerry ClientID here - refer to README.MD for instructions. -->
+        <!-- TODO Add your BlackBerry ClientID here. Refer to README.MD for instructions. -->
         <meta-data
             android:name="com.blackberry.security.ClientID"
-            android:value=< YOUR_BLACKBERRY_APPID_CLIENT_ID_HERE > />
+            android:value="< YOUR_BLACKBERRY_APPID_CLIENT_ID_HERE >" />
 
         <activity
             android:name=".DeviceChecksActivity"

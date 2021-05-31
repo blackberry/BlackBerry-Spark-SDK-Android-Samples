@@ -21,8 +21,14 @@ var router = express.Router();
 const storage = require('node-persist');
 
 router.get('/', async(req, res) => {
-    const savedAppInstanceIds = await storage.getItem("appInstanceIds")
-    const savedAppAuthicityIDs = await storage.getItem("appAuthicityIDs")
+    let savedAppInstanceIds = await storage.getItem("appInstanceIds")
+    let savedAppAuthicityIDs = await storage.getItem("appAuthicityIDs")
+    if (savedAppInstanceIds === undefined) {
+        savedAppInstanceIds = [];
+    }
+    if (savedAppAuthicityIDs === undefined) {
+        savedAppAuthicityIDs = [];
+    }
     res.render('appAuthenticity', { title: 'Pyrite Financial Server', savedAppInstanceIds: savedAppInstanceIds, savedAppAuthicityIDs: savedAppAuthicityIDs});
 });
 

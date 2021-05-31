@@ -29,6 +29,7 @@ import com.blackberry.security.file.FileOutputStream;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 
 //AccountBalanceActivity demonstrates the use of the BlackBerry Spark SDK secure file system.
@@ -56,8 +57,8 @@ public class AccountBalanceActivity extends AppCompatActivity {
     public void onDeposit(View view)
     {
         try {
-            Float accountBalance = new Float(textViewAccountBalance.getText().toString());
-            Float dollarChange = new Float(editTextDollarAmount.getText().toString());
+            float accountBalance = Float.parseFloat(textViewAccountBalance.getText().toString());
+            float dollarChange = Float.parseFloat(editTextDollarAmount.getText().toString());
 
             accountBalance += dollarChange;
             writeAccountBalance(accountBalance);
@@ -72,8 +73,8 @@ public class AccountBalanceActivity extends AppCompatActivity {
     public void onWithdraw(View view)
     {
         try {
-            Float accountBalance = new Float(textViewAccountBalance.getText().toString());
-            Float dollarChange = new Float(editTextDollarAmount.getText().toString());
+            float accountBalance = Float.parseFloat(textViewAccountBalance.getText().toString());
+            float dollarChange = Float.parseFloat(editTextDollarAmount.getText().toString());
 
             accountBalance -= dollarChange;
             writeAccountBalance(accountBalance);
@@ -88,7 +89,7 @@ public class AccountBalanceActivity extends AppCompatActivity {
     //Reset the stored value to 0.
     public void onResetBalance(View view)
     {
-        writeAccountBalance(new Float(0));
+        writeAccountBalance((float) 0);
         readAccountBalance();
     }
 
@@ -97,18 +98,18 @@ public class AccountBalanceActivity extends AppCompatActivity {
     {
         final String filePath = FOLDER_NAME + "/" + FILE_NAME;
         String dataFromFile = "0.00";
-        byte data[];
+        byte[] data;
         try {
             final InputStream inputStream = new FileInputStream(filePath);
             if (inputStream.available() > 0) {
                 data = new byte[inputStream.available()];
                 inputStream.read(data);
-                dataFromFile = new String(data, "UTF-8");
+                dataFromFile = new String(data, StandardCharsets.UTF_8);
                 inputStream.close();
 
                 DecimalFormat df = new DecimalFormat();
                 df.setMaximumFractionDigits(2);
-                dataFromFile = df.format(new Float(dataFromFile));
+                dataFromFile = df.format(Float.valueOf(dataFromFile));
             }
             Log.i(TAG, "Read from file success!");
         } catch (final IOException ioException) {
@@ -127,7 +128,7 @@ public class AccountBalanceActivity extends AppCompatActivity {
             com.good.gd.file.File file = new com.good.gd.file.File(FOLDER_NAME);
 
             if(!file.exists()){
-                boolean isDirectoryCreated = file.mkdir();
+                file.mkdir();
             }
 
             FileOutputStream out = new FileOutputStream(FOLDER_NAME + "/" + FILE_NAME, false);

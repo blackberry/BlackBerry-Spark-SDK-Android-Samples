@@ -98,7 +98,9 @@ router.post('/save', function(req, res) {
             "HookDetection_Check": incomingRules.hookDetectionCheck,
             "DeviceEncryption_Check": incomingRules.deviceEncryptionCheck,
             "AndroidHWKeyVerifyBoot_Check": incomingRules.androidHWKeyVerifyBootCheck,
-            "DeveloperMode_Check": incomingRules.developerModeCheck
+            "DeveloperMode_Check": incomingRules.developerModeCheck,
+			"EmulatorDetection_Check": incomingRules.emulatorDetectionCheck,
+			"GooglePlayProtect_Check": incomingRules.playProtectCheck
         },
         "iOSDeviceSoftwareRules": {
             "DeviceOSSoftware_Check": incomingRules.iOSDeviceOSSoftwareCheck,

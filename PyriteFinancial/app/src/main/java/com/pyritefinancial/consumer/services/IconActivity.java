@@ -20,6 +20,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -49,6 +50,8 @@ public class IconActivity extends AppCompatActivity {
         Toolbar myToolbar = (Toolbar) findViewById(R.id.iconToolbar);
         setSupportActionBar(myToolbar);
 
+        boolean promptedForLogging = false;  //Used so the app doesn't display 2 prompts to the user at once (to enable logging and biometrics).
+
         //Read the preference from a BlackBerry Spark SDK secure preference file.
         Preferences p = new Preferences();
         SharedPreferences prefs = p.getSharedPreferences(BlackBerrySecurityAgent.SHARED_PREFS_NAME, MODE_PRIVATE);
@@ -63,13 +66,13 @@ public class IconActivity extends AppCompatActivity {
                 enableThreatCollection();
             }
         }
-        else
-        {
+        else {
             //Ask user to enable anonymous threat data collection.
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setTitle("Enable Anonymous Threat Data Collection?");
             builder.setMessage("The BlackBerry Spark SDK collects anonymous data that BlackBerry believes may assist in finding new, previously undetected, threats, and increasing confidence in the detection of threats. The information may bring benefits to future detection capabilities. The information collected does not allow identification of the individual user, device or organization.");
             builder.setPositiveButton("Enable", new DialogInterface.OnClickListener() {
+                @SuppressLint("ApplySharedPref")
                 public void onClick(DialogInterface dialog, int id) {
                     //Store the preference in a BlackBerry Spark SDK secure preference file.
                     Preferences p = new Preferences();
@@ -93,6 +96,7 @@ public class IconActivity extends AppCompatActivity {
                 }
             });
             builder.setNegativeButton("Disable", new DialogInterface.OnClickListener() {
+                @SuppressLint("ApplySharedPref")
                 public void onClick(DialogInterface dialog, int id) {
                     //Store the preference in a BlackBerry Spark SDK secure preference file.
                     Preferences p = new Preferences();
@@ -106,6 +110,14 @@ public class IconActivity extends AppCompatActivity {
                 }
             });
             builder.create().show();
+
+            promptedForLogging = true;
+        }
+
+        //Check if the user opted out of using biometrics, if not set up if needed.
+        if (!bioOptedOut && !promptedForLogging)
+        {
+            doBiometricsSetup();
         }
     }
 
@@ -115,12 +127,22 @@ public class IconActivity extends AppCompatActivity {
         final AppAuthentication appAuth = new AppAuthentication();
 
         //Check if biometrics is available and hasn't been set up yet.
-        if (appAuth.isBiometricsAvailable() && !appAuth.isBiometricsSetup()) {
+        if (appAuth.isBiometricsAvailable() && (!appAuth.isBiometricsSetup() || appAuth.hasBiometryBeenInvalidatedByChange())) {
+            String userMessage = "";
+
+            if (appAuth.hasBiometryBeenInvalidatedByChange()) {
+                userMessage = "Would you like to re-enable biometric authentication? Any face or fingerprint registered on this device will be able to access the application.";
+            } else  if (!appAuth.isBiometricsSetup()) {
+                userMessage = "The BlackBerry Spark SDK supports biometric authentication. Do you wish to set this up now?";
+            } else {
+                userMessage = "Biometrics is in an unknown state.";
+            }
+
             //Ask user if they wish to enable biometric authentication.
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setTitle("Enable Biometric Authentication?");
-            builder.setMessage("The BlackBerry Spark SDK supports biometric authentication.  Do you wish to set this up now?");
-            builder.setPositiveButton("Enable", new DialogInterface.OnClickListener() {
+            builder.setMessage(userMessage);
+            builder.setPositiveButton("Enable Biometrics", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
                     //Enable biometric authentication.
                     if (!appAuth.setupBiometrics()) {
@@ -143,7 +165,8 @@ public class IconActivity extends AppCompatActivity {
                     dialog.dismiss();
                 }
             });
-            builder.setNegativeButton("Disable", new DialogInterface.OnClickListener() {
+            builder.setNegativeButton("Dismiss", new DialogInterface.OnClickListener() {
+                @SuppressLint("ApplySharedPref")
                 public void onClick(DialogInterface dialog, int id) {
                     //Store their preference in a BlackBerry Spark SDK secure preference file.
                     Preferences p = new Preferences();
@@ -191,16 +214,11 @@ public class IconActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.action_settings:
-                // User chose the "Settings" item, show the app settings UI...
-                Intent settingsIntent = new Intent(this, SettingsActivity.class);
-                startActivity(settingsIntent);
-                return true;
-
-            default:
-                return super.onOptionsItemSelected(item);
-
+        if (item.getItemId() == R.id.action_settings) {// User chose the "Settings" item, show the app settings UI...
+            Intent settingsIntent = new Intent(this, SettingsActivity.class);
+            startActivity(settingsIntent);
+            return true;
         }
+        return super.onOptionsItemSelected(item);
     }
 }

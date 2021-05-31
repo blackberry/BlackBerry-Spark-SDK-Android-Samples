@@ -97,6 +97,7 @@ public class BlackBerrySecurityAgent extends BroadcastReceiver{
         String action = intent.getAction();
 
         if (ThreatStatus.ACTION_THREAT_STATE_NOTIFICATION.equals(action)) {
+            Log.d(TAG, "Oh no, a threat was detected!");
             displayThreatStatusResults();
         }
         else if (SecurityControl.ACTION_INITIALIZATION_STATE_NOTIFICATION.equals(action)) {
@@ -264,6 +265,8 @@ public class BlackBerrySecurityAgent extends BroadcastReceiver{
             // First check overall threat state
             ThreatStatus threatStatus = ThreatStatus.getInstance();
             ThreatLevel overall = threatStatus.getOverallThreatLevel();
+
+            Log.d("ACTION_THREAT_STATE_NOTIFICATION", "Threat Status: " + overall);
 
             //If it's high or medium warn the user.
             if (overall == ThreatLevel.High || overall == ThreatLevel.Medium) {

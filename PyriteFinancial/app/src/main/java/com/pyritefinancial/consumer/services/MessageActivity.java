@@ -25,7 +25,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.TextView;
 
 import com.blackberry.security.detect.ContentChecker;
 
@@ -40,7 +39,7 @@ public class MessageActivity extends AppCompatActivity {
 
     private static final String TAG = MessageActivity.class.getSimpleName();
 
-    private ContentCheckerWrapper ccWrapper = new ContentCheckerWrapper();
+    private final ContentCheckerWrapper ccWrapper = new ContentCheckerWrapper();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,7 +50,6 @@ public class MessageActivity extends AppCompatActivity {
 
     public void onClickBadUrl(View view)
     {
-        TextView urlView = (TextView)view;
         // This is fake malicious URL marked as unsafe in BlackBerry Spark.
         String theUrl = "https://blackberry.com/safe_browsing_test_fake_bad_url";
         ccWrapper.checkURLFunc(theUrl);
@@ -59,7 +57,6 @@ public class MessageActivity extends AppCompatActivity {
 
     public void onClickGoodUrl(View view)
     {
-        TextView urlView = (TextView)view;
         String theUrl = "https://www.blackberry.com";
         ccWrapper.checkURLFunc(theUrl);
     }
@@ -89,8 +86,8 @@ public class MessageActivity extends AppCompatActivity {
 
     class ContentCheckerWrapper extends ContentChecker {
 
-        private HashMap<Long, CheckType> checkMap = new HashMap<>();
-        private HashMap<Long, String> urlMap = new HashMap<>();
+        private final HashMap<Long, CheckType> checkMap = new HashMap<>();
+        private final HashMap<Long, String> urlMap = new HashMap<>();
 
         void checkIPFunc(String ip) {
             Log.d(TAG, "Start checking IP");

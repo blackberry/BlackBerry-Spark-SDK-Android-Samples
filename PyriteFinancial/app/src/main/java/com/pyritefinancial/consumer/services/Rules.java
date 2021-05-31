@@ -26,7 +26,6 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.blackberry.security.SecurityFeatureStatus;
 import com.blackberry.security.config.ManageFeatures;
 import com.blackberry.security.config.ManageRules;
 import com.blackberry.security.config.rules.ContentCheckerRules;
@@ -36,6 +35,7 @@ import com.blackberry.security.config.rules.DeviceSecurityRules;
 import com.blackberry.security.config.rules.DeviceSoftwareRules;
 import com.blackberry.security.config.rules.MalwareScanRules;
 import com.blackberry.security.detect.DeviceChecker;
+import com.blackberry.security.identity.AppIdentity;
 import com.blackberry.security.threat.ThreatType;
 
 import org.json.JSONArray;
@@ -43,8 +43,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 //Rules demonstrates:
 // * Reading and writing BlackBerry Spark SDK rules and features to and from JSON.
@@ -77,13 +79,13 @@ public class Rules {
         //but remains constant on all installations.  This ID is never shared with BlackBerry.
         //The application instance ID is a unique ID which is constant for a single activated instance of the application.
         //This identifier is never shared or known by BlackBerry.
-        //TODO - Uncomment the lines below and enter your server address if you are testing with the Pryrite Financial Server.
-        /*
+        //TODO - Uncomment the lines below and enter your server address if you are testing with the Pyrite Financial Server.
+/*
         AppIdentity aID = new AppIdentity();
         Map appIDs = aID.getApplicationAuthenticityIdentifiers();
         String url ="http://<YOUR_SERVER_ADDRESS>:3000/rules?appAuthenticityID=" + appIDs.get(AppIdentity.AUTHENTICITY_ID)
                 + "&appInstanceID=" + aID.getAppInstanceIdentifier();
-        */
+*/
 
         StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
                 new Response.Listener<String>() {
@@ -111,6 +113,86 @@ public class Rules {
 
         try {
             JSONObject jsonRules = new JSONObject(rulesJSON);
+
+            //Parse and apply Features. Features need to be applied first because enabling a feature will enable all checks within that feature.
+            if (jsonRules.has("Features"))
+            {
+                ManageFeatures manageFeatures = new ManageFeatures();
+                JSONObject jsonFeatures = jsonRules.getJSONObject("Features");
+
+                if (jsonFeatures.has("AppMalware_Enabled"))
+                {
+                    if (ManageFeatures.FeatureStatus.ENABLED.toString().equalsIgnoreCase(jsonFeatures.getString("AppMalware_Enabled")))
+                    {
+                        manageFeatures.enableFeature(ThreatType.AppMalware);
+
+                    } else if (ManageFeatures.FeatureStatus.DISABLED.toString().equalsIgnoreCase(jsonFeatures.getString("AppMalware_Enabled")))
+                    {
+                        manageFeatures.disableFeature(ThreatType.AppMalware);
+                    }
+                }
+
+                if (jsonFeatures.has("AppSideload_Enabled"))
+                {
+                    if (ManageFeatures.FeatureStatus.ENABLED.toString().equalsIgnoreCase(jsonFeatures.getString("AppSideload_Enabled")))
+                    {
+                        manageFeatures.enableFeature(ThreatType.AppSideload);
+
+                    } else if (ManageFeatures.FeatureStatus.DISABLED.toString().equalsIgnoreCase(jsonFeatures.getString("AppSideload_Enabled")))
+                    {
+                        manageFeatures.disableFeature(ThreatType.AppSideload);
+                    }
+                }
+
+                if (jsonFeatures.has("DeviceSecurity_Enabled"))
+                {
+                    if (ManageFeatures.FeatureStatus.ENABLED.toString().equalsIgnoreCase(jsonFeatures.getString("DeviceSecurity_Enabled")))
+                    {
+                        manageFeatures.enableFeature(ThreatType.DeviceSecurity);
+
+                    } else if (ManageFeatures.FeatureStatus.DISABLED.toString().equalsIgnoreCase(jsonFeatures.getString("DeviceSecurity_Enabled")))
+                    {
+                        manageFeatures.disableFeature(ThreatType.DeviceSecurity);
+                    }
+                }
+
+                if (jsonFeatures.has("DeviceSoftware_Enabled"))
+                {
+                    if (ManageFeatures.FeatureStatus.ENABLED.toString().equalsIgnoreCase(jsonFeatures.getString("DeviceSoftware_Enabled")))
+                    {
+                        manageFeatures.enableFeature(ThreatType.DeviceSoftware);
+
+                    } else if (ManageFeatures.FeatureStatus.DISABLED.toString().equalsIgnoreCase(jsonFeatures.getString("DeviceSoftware_Enabled")))
+                    {
+                        manageFeatures.disableFeature(ThreatType.DeviceSoftware);
+                    }
+                }
+
+                if (jsonFeatures.has("SafeBrowsing_Enabled"))
+                {
+                    if (ManageFeatures.FeatureStatus.ENABLED.toString().equalsIgnoreCase(jsonFeatures.getString("SafeBrowsing_Enabled")))
+                    {
+                        manageFeatures.enableFeature(ThreatType.SafeBrowsing);
+
+                    } else if (ManageFeatures.FeatureStatus.DISABLED.toString().equalsIgnoreCase(jsonFeatures.getString("SafeBrowsing_Enabled")))
+                    {
+                        manageFeatures.disableFeature(ThreatType.SafeBrowsing);
+                    }
+                }
+
+                if (jsonFeatures.has("SafeMessaging_Enabled"))
+                {
+                    if (ManageFeatures.FeatureStatus.ENABLED.toString().equalsIgnoreCase(jsonFeatures.getString("SafeMessaging_Enabled")))
+                    {
+                        manageFeatures.enableFeature(ThreatType.SafeMessaging);
+
+                    } else if (ManageFeatures.FeatureStatus.DISABLED.toString().equalsIgnoreCase(jsonFeatures.getString("SafeMessaging_Enabled")))
+                    {
+                        manageFeatures.disableFeature(ThreatType.SafeMessaging);
+                    }
+                }
+
+            }
 
             //Parse and apply Malware Scan Rules.
             if (jsonRules.has("MalwareScanRules")) {
@@ -201,11 +283,11 @@ public class Rules {
 
                 if (jsonDeviceSecurityRules.has("DeviceLockScreen_Check"))
                 {
-                    if (SecurityFeatureStatus.Enabled.toString().equalsIgnoreCase(jsonDeviceSecurityRules.getString("DeviceLockScreen_Check")))
+                    if (ManageFeatures.FeatureStatus.ENABLED.toString().equalsIgnoreCase(jsonDeviceSecurityRules.getString("DeviceLockScreen_Check")))
                     {
                         deviceSecurityRules.enableCheck(DeviceSecurityRules.DeviceSecurityCheck.DEVICE_LOCK_SCREEN);
                     }
-                    else if (SecurityFeatureStatus.Disabled.toString().equalsIgnoreCase(jsonDeviceSecurityRules.getString("DeviceLockScreen_Check")))
+                    else if (ManageFeatures.FeatureStatus.DISABLED.toString().equalsIgnoreCase(jsonDeviceSecurityRules.getString("DeviceLockScreen_Check")))
                     {
                         deviceSecurityRules.disableCheck(DeviceSecurityRules.DeviceSecurityCheck.DEVICE_LOCK_SCREEN);
                     }
@@ -213,23 +295,47 @@ public class Rules {
 
                 if (jsonDeviceSecurityRules.has("DeveloperMode_Check"))
                 {
-                    if (SecurityFeatureStatus.Enabled.toString().equalsIgnoreCase(jsonDeviceSecurityRules.getString("DeveloperMode_Check")))
+                    if (ManageFeatures.FeatureStatus.ENABLED.toString().equalsIgnoreCase(jsonDeviceSecurityRules.getString("DeveloperMode_Check")))
                     {
                         deviceSecurityRules.enableCheck(DeviceSecurityRules.DeviceSecurityCheck.DEVELOPER_MODE);
                     }
-                    else if (SecurityFeatureStatus.Disabled.toString().equalsIgnoreCase(jsonDeviceSecurityRules.getString("DeveloperMode_Check")))
+                    else if (ManageFeatures.FeatureStatus.DISABLED.toString().equalsIgnoreCase(jsonDeviceSecurityRules.getString("DeveloperMode_Check")))
                     {
                         deviceSecurityRules.disableCheck(DeviceSecurityRules.DeviceSecurityCheck.DEVELOPER_MODE);
                     }
                 }
 
+                if (jsonDeviceSecurityRules.has("EmulatorDetection_Check"))
+                {
+                    if (ManageFeatures.FeatureStatus.ENABLED.toString().equalsIgnoreCase(jsonDeviceSecurityRules.getString("EmulatorDetection_Check")))
+                    {
+                        deviceSecurityRules.enableCheck(DeviceSecurityRules.DeviceSecurityCheck.EMULATOR_DETECTION);
+                    }
+                    else if (ManageFeatures.FeatureStatus.DISABLED.toString().equalsIgnoreCase(jsonDeviceSecurityRules.getString("EmulatorDetection_Check")))
+                    {
+                        deviceSecurityRules.disableCheck(DeviceSecurityRules.DeviceSecurityCheck.EMULATOR_DETECTION);
+                    }
+                }
+
+                if (jsonDeviceSecurityRules.has("GooglePlayProtect_Check"))
+                {
+                    if (ManageFeatures.FeatureStatus.ENABLED.toString().equalsIgnoreCase(jsonDeviceSecurityRules.getString("GooglePlayProtect_Check")))
+                    {
+                        deviceSecurityRules.enableCheck(DeviceSecurityRules.DeviceSecurityCheck.PLAY_PROTECT_VERIFICATION);
+                    }
+                    else if (ManageFeatures.FeatureStatus.DISABLED.toString().equalsIgnoreCase(jsonDeviceSecurityRules.getString("GooglePlayProtect_Check")))
+                    {
+                        deviceSecurityRules.disableCheck(DeviceSecurityRules.DeviceSecurityCheck.PLAY_PROTECT_VERIFICATION);
+                    }
+                }
+
                 if (jsonDeviceSecurityRules.has("DeviceEncryption_Check"))
                 {
-                    if (SecurityFeatureStatus.Enabled.toString().equalsIgnoreCase(jsonDeviceSecurityRules.getString("DeviceEncryption_Check")))
+                    if (ManageFeatures.FeatureStatus.ENABLED.toString().equalsIgnoreCase(jsonDeviceSecurityRules.getString("DeviceEncryption_Check")))
                     {
                         deviceSecurityRules.enableCheck(DeviceSecurityRules.DeviceSecurityCheck.DEVICE_ENCRYPTION);
                     }
-                    else if (SecurityFeatureStatus.Disabled.toString().equalsIgnoreCase(jsonDeviceSecurityRules.getString("DeviceEncryption_Check")))
+                    else if (ManageFeatures.FeatureStatus.DISABLED.toString().equalsIgnoreCase(jsonDeviceSecurityRules.getString("DeviceEncryption_Check")))
                     {
                         deviceSecurityRules.disableCheck(DeviceSecurityRules.DeviceSecurityCheck.DEVICE_ENCRYPTION);
                     }
@@ -237,11 +343,11 @@ public class Rules {
 
                 if (jsonDeviceSecurityRules.has("JailbreakDetection_Check"))
                 {
-                    if (SecurityFeatureStatus.Enabled.toString().equalsIgnoreCase(jsonDeviceSecurityRules.getString("JailbreakDetection_Check")))
+                    if (ManageFeatures.FeatureStatus.ENABLED.toString().equalsIgnoreCase(jsonDeviceSecurityRules.getString("JailbreakDetection_Check")))
                     {
                         deviceSecurityRules.enableCheck(DeviceSecurityRules.DeviceSecurityCheck.JAILBREAK_DETECTION);
                     }
-                    else if (SecurityFeatureStatus.Disabled.toString().equalsIgnoreCase(jsonDeviceSecurityRules.getString("JailbreakDetection_Check")))
+                    else if (ManageFeatures.FeatureStatus.DISABLED.toString().equalsIgnoreCase(jsonDeviceSecurityRules.getString("JailbreakDetection_Check")))
                     {
                         deviceSecurityRules.disableCheck(DeviceSecurityRules.DeviceSecurityCheck.JAILBREAK_DETECTION);
                     }
@@ -249,11 +355,11 @@ public class Rules {
 
                 if (jsonDeviceSecurityRules.has("AndroidHWKeyVerifyBoot_Check"))
                 {
-                    if (SecurityFeatureStatus.Enabled.toString().equalsIgnoreCase(jsonDeviceSecurityRules.getString("AndroidHWKeyVerifyBoot_Check")))
+                    if (ManageFeatures.FeatureStatus.ENABLED.toString().equalsIgnoreCase(jsonDeviceSecurityRules.getString("AndroidHWKeyVerifyBoot_Check")))
                     {
                         deviceSecurityRules.enableCheck(DeviceSecurityRules.DeviceSecurityCheck.ANDROID_HWKEY_VERIFY_BOOT);
                     }
-                    else if (SecurityFeatureStatus.Disabled.toString().equalsIgnoreCase(jsonDeviceSecurityRules.getString("AndroidHWKeyVerifyBoot_Check")))
+                    else if (ManageFeatures.FeatureStatus.DISABLED.toString().equalsIgnoreCase(jsonDeviceSecurityRules.getString("AndroidHWKeyVerifyBoot_Check")))
                     {
                         deviceSecurityRules.disableCheck(DeviceSecurityRules.DeviceSecurityCheck.ANDROID_HWKEY_VERIFY_BOOT);
                     }
@@ -261,11 +367,11 @@ public class Rules {
 
                 if (jsonDeviceSecurityRules.has("DebugDetection_Check"))
                 {
-                    if (SecurityFeatureStatus.Enabled.toString().equalsIgnoreCase(jsonDeviceSecurityRules.getString("DebugDetection_Check")))
+                    if (ManageFeatures.FeatureStatus.ENABLED.toString().equalsIgnoreCase(jsonDeviceSecurityRules.getString("DebugDetection_Check")))
                     {
                         deviceSecurityRules.enableCheck(DeviceSecurityRules.DeviceSecurityCheck.DEBUG_DETECTION);
                     }
-                    else if (SecurityFeatureStatus.Disabled.toString().equalsIgnoreCase(jsonDeviceSecurityRules.getString("DebugDetection_Check")))
+                    else if (ManageFeatures.FeatureStatus.DISABLED.toString().equalsIgnoreCase(jsonDeviceSecurityRules.getString("DebugDetection_Check")))
                     {
                         deviceSecurityRules.disableCheck(DeviceSecurityRules.DeviceSecurityCheck.DEBUG_DETECTION);
                     }
@@ -279,11 +385,11 @@ public class Rules {
 
                 if (jsonDeviceSecurityRules.has("HookDetection_Check"))
                 {
-                    if (SecurityFeatureStatus.Enabled.toString().equalsIgnoreCase(jsonDeviceSecurityRules.getString("HookDetection_Check")))
+                    if (ManageFeatures.FeatureStatus.ENABLED.toString().equalsIgnoreCase(jsonDeviceSecurityRules.getString("HookDetection_Check")))
                     {
                         deviceSecurityRules.enableCheck(DeviceSecurityRules.DeviceSecurityCheck.HOOK_DETECTION);
                     }
-                    else if (SecurityFeatureStatus.Disabled.toString().equalsIgnoreCase(jsonDeviceSecurityRules.getString("HookDetection_Check")))
+                    else if (ManageFeatures.FeatureStatus.DISABLED.toString().equalsIgnoreCase(jsonDeviceSecurityRules.getString("HookDetection_Check")))
                     {
                         deviceSecurityRules.disableCheck(DeviceSecurityRules.DeviceSecurityCheck.HOOK_DETECTION);
                     }
@@ -301,11 +407,11 @@ public class Rules {
 
                 if (jsonDeviceSoftwareRules.has("DeviceSecurityPatchSoftware_Check"))
                 {
-                    if (SecurityFeatureStatus.Enabled.toString().equalsIgnoreCase(jsonDeviceSoftwareRules.getString("DeviceSecurityPatchSoftware_Check")))
+                    if (ManageFeatures.FeatureStatus.ENABLED.toString().equalsIgnoreCase(jsonDeviceSoftwareRules.getString("DeviceSecurityPatchSoftware_Check")))
                     {
                         deviceSoftwareRules.enableCheck(DeviceSoftwareRules.DeviceSoftwareCheck.DEVICE_SECURITY_PATCH_SOFTWARE);
                     }
-                    else if (SecurityFeatureStatus.Disabled.toString().equalsIgnoreCase(jsonDeviceSoftwareRules.getString("DeviceSecurityPatchSoftware_Check")))
+                    else if (ManageFeatures.FeatureStatus.DISABLED.toString().equalsIgnoreCase(jsonDeviceSoftwareRules.getString("DeviceSecurityPatchSoftware_Check")))
                     {
                         deviceSoftwareRules.disableCheck(DeviceSoftwareRules.DeviceSoftwareCheck.DEVICE_SECURITY_PATCH_SOFTWARE);
                     }
@@ -313,11 +419,11 @@ public class Rules {
 
                 if (jsonDeviceSoftwareRules.has("DeviceOSSoftware_Check"))
                 {
-                    if (SecurityFeatureStatus.Enabled.toString().equalsIgnoreCase(jsonDeviceSoftwareRules.getString("DeviceOSSoftware_Check")))
+                    if (ManageFeatures.FeatureStatus.ENABLED.toString().equalsIgnoreCase(jsonDeviceSoftwareRules.getString("DeviceOSSoftware_Check")))
                     {
                         deviceSoftwareRules.enableCheck(DeviceSoftwareRules.DeviceSoftwareCheck.DEVICE_OS_SOFTWARE);
                     }
-                    else if (SecurityFeatureStatus.Disabled.toString().equalsIgnoreCase(jsonDeviceSoftwareRules.getString("DeviceOSSoftware_Check")))
+                    else if (ManageFeatures.FeatureStatus.DISABLED.toString().equalsIgnoreCase(jsonDeviceSoftwareRules.getString("DeviceOSSoftware_Check")))
                     {
                         deviceSoftwareRules.disableCheck(DeviceSoftwareRules.DeviceSoftwareCheck.DEVICE_OS_SOFTWARE);
                     }
@@ -325,11 +431,11 @@ public class Rules {
 
                 if (jsonDeviceSoftwareRules.has("DeviceManufacturer_Check"))
                 {
-                    if (SecurityFeatureStatus.Enabled.toString().equalsIgnoreCase(jsonDeviceSoftwareRules.getString("DeviceManufacturer_Check")))
+                    if (ManageFeatures.FeatureStatus.ENABLED.toString().equalsIgnoreCase(jsonDeviceSoftwareRules.getString("DeviceManufacturer_Check")))
                     {
                         deviceSoftwareRules.enableCheck(DeviceSoftwareRules.DeviceSoftwareCheck.DEVICE_MANUFACTURER);
                     }
-                    else if (SecurityFeatureStatus.Disabled.toString().equalsIgnoreCase(jsonDeviceSoftwareRules.getString("DeviceManufacturer_Check")))
+                    else if (ManageFeatures.FeatureStatus.DISABLED.toString().equalsIgnoreCase(jsonDeviceSoftwareRules.getString("DeviceManufacturer_Check")))
                     {
                         deviceSoftwareRules.disableCheck(DeviceSoftwareRules.DeviceSoftwareCheck.DEVICE_MANUFACTURER);
                     }
@@ -337,11 +443,11 @@ public class Rules {
 
                 if (jsonDeviceSoftwareRules.has("DeviceModel_Check"))
                 {
-                    if (SecurityFeatureStatus.Enabled.toString().equalsIgnoreCase(jsonDeviceSoftwareRules.getString("DeviceModel_Check")))
+                    if (ManageFeatures.FeatureStatus.ENABLED.toString().equalsIgnoreCase(jsonDeviceSoftwareRules.getString("DeviceModel_Check")))
                     {
                         deviceSoftwareRules.enableCheck(DeviceSoftwareRules.DeviceSoftwareCheck.DEVICE_MODEL);
                     }
-                    else if (SecurityFeatureStatus.Disabled.toString().equalsIgnoreCase(jsonDeviceSoftwareRules.getString("DeviceModel_Check")))
+                    else if (ManageFeatures.FeatureStatus.DISABLED.toString().equalsIgnoreCase(jsonDeviceSoftwareRules.getString("DeviceModel_Check")))
                     {
                         deviceSoftwareRules.disableCheck(DeviceSoftwareRules.DeviceSoftwareCheck.DEVICE_MODEL);
                     }
@@ -378,11 +484,11 @@ public class Rules {
 
                 if (jsonDataCollectionRules.has("DataCollectionEnabled"))
                 {
-                    if ("Enabled".equalsIgnoreCase(jsonDataCollectionRules.getString("DataCollectionEnabled")))
+                    if ("ENABLED".equalsIgnoreCase(jsonDataCollectionRules.getString("DataCollectionEnabled")))
                     {
                         dcRules.enableDataCollection();
                     }
-                    else if ("Disabled".equalsIgnoreCase(jsonDataCollectionRules.getString("DataCollectionEnabled")))
+                    else if ("DISABLED".equalsIgnoreCase(jsonDataCollectionRules.getString("DataCollectionEnabled")))
                     {
                         dcRules.disableDataCollection();
                     }
@@ -422,92 +528,11 @@ public class Rules {
                 Log.d(TAG, "Device Offline Rules Saved: " + rulesSaved);
             }
 
-
-            //Parse and apply Features.
-            if (jsonRules.has("Features"))
-            {
-                ManageFeatures manageFeatures = new ManageFeatures();
-                JSONObject jsonFeatures = jsonRules.getJSONObject("Features");
-
-                if (jsonFeatures.has("AppMalware_Enabled"))
-                {
-                    if (ManageFeatures.FeatureStatus.ENABLED.toString().equalsIgnoreCase(jsonFeatures.getString("AppMalware_Enabled")))
-                    {
-                        manageFeatures.enableFeature(ThreatType.AppMalware);
-
-                    } else if (ManageFeatures.FeatureStatus.DISABLED.toString().equalsIgnoreCase(jsonFeatures.getString("AppMalware_Enabled")))
-                    {
-                        manageFeatures.disableFeature(ThreatType.AppMalware);
-                    }
-                }
-
-                if (jsonFeatures.has("AppSideload_Enabled"))
-                {
-                    if (ManageFeatures.FeatureStatus.ENABLED.toString().equalsIgnoreCase(jsonFeatures.getString("AppSideload_Enabled")))
-                    {
-                        manageFeatures.enableFeature(ThreatType.AppSideload);
-
-                    } else if (ManageFeatures.FeatureStatus.DISABLED.toString().equalsIgnoreCase(jsonFeatures.getString("AppSideload_Enabled")))
-                    {
-                        manageFeatures.disableFeature(ThreatType.AppSideload);
-                    }
-                }
-
-                if (jsonFeatures.has("DeviceSecurity_Enabled"))
-                {
-                    if (ManageFeatures.FeatureStatus.ENABLED.toString().equalsIgnoreCase(jsonFeatures.getString("DeviceSecurity_Enabled")))
-                    {
-                        manageFeatures.enableFeature(ThreatType.DeviceSecurity);
-
-                    } else if (ManageFeatures.FeatureStatus.DISABLED.toString().equalsIgnoreCase(jsonFeatures.getString("DeviceSecurity_Enabled")))
-                    {
-                        manageFeatures.disableFeature(ThreatType.DeviceSecurity);
-                    }
-                }
-
-                if (jsonFeatures.has("DeviceSoftware_Enabled"))
-                {
-                    if (ManageFeatures.FeatureStatus.ENABLED.toString().equalsIgnoreCase(jsonFeatures.getString("DeviceSoftware_Enabled")))
-                    {
-                        manageFeatures.enableFeature(ThreatType.DeviceSoftware);
-
-                    } else if (ManageFeatures.FeatureStatus.DISABLED.toString().equalsIgnoreCase(jsonFeatures.getString("DeviceSoftware_Enabled")))
-                    {
-                        manageFeatures.disableFeature(ThreatType.DeviceSoftware);
-                    }
-                }
-
-                if (jsonFeatures.has("SafeBrowsing_Enabled"))
-                {
-                    if (ManageFeatures.FeatureStatus.ENABLED.toString().equalsIgnoreCase(jsonFeatures.getString("SafeBrowsing_Enabled")))
-                    {
-                        manageFeatures.enableFeature(ThreatType.SafeBrowsing);
-
-                    } else if (ManageFeatures.FeatureStatus.DISABLED.toString().equalsIgnoreCase(jsonFeatures.getString("SafeBrowsing_Enabled")))
-                    {
-                        manageFeatures.disableFeature(ThreatType.SafeBrowsing);
-                    }
-                }
-
-                if (jsonFeatures.has("SafeMessaging_Enabled"))
-                {
-                    if (ManageFeatures.FeatureStatus.ENABLED.toString().equalsIgnoreCase(jsonFeatures.getString("SafeMessaging_Enabled")))
-                    {
-                        manageFeatures.enableFeature(ThreatType.SafeMessaging);
-
-                    } else if (ManageFeatures.FeatureStatus.DISABLED.toString().equalsIgnoreCase(jsonFeatures.getString("SafeMessaging_Enabled")))
-                    {
-                        manageFeatures.disableFeature(ThreatType.SafeMessaging);
-                    }
-                }
-
-            }
-
             Toast toast = Toast.makeText(mContext, "Rules were loaded.", Toast.LENGTH_LONG);
             toast.show();
 
         } catch (JSONException | IllegalArgumentException e) {
-            Log.e(TAG, "Failed to parse JSON. " + e.getStackTrace());
+            Log.e(TAG, "Failed to parse JSON. " + Arrays.toString(e.getStackTrace()));
 
             Toast toast = Toast.makeText(mContext, "Failed to parse JSON.", Toast.LENGTH_LONG);
             toast.show();
@@ -522,7 +547,7 @@ public class Rules {
     //Converts JSONArray to List<String>
     private List<String> convertJSONArrayToList(JSONArray jsonArray)
     {
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
 
         for (int i=0; i < jsonArray.length(); i++) {
             list.add( jsonArray.optString(i) );
@@ -580,6 +605,8 @@ public class Rules {
             jsonDeviceSecurityRules.put("DebugDetection_Check", deviceSecurityRules.getCheck(DeviceSecurityRules.DeviceSecurityCheck.DEBUG_DETECTION));
             jsonDeviceSecurityRules.put("DebugDetection_EnforcementAction", deviceSecurityRules.getEnforcementAction(DeviceSecurityRules.DeviceSecurityCheck.DEBUG_DETECTION));
             jsonDeviceSecurityRules.put("HookDetection_Check", deviceSecurityRules.getCheck(DeviceSecurityRules.DeviceSecurityCheck.HOOK_DETECTION));
+            jsonDeviceSecurityRules.put("EmulatorDetection_Check", deviceSecurityRules.getCheck(DeviceSecurityRules.DeviceSecurityCheck.EMULATOR_DETECTION));
+            jsonDeviceSecurityRules.put("GooglePlayProtect_Check", deviceSecurityRules.getCheck(DeviceSecurityRules.DeviceSecurityCheck.PLAY_PROTECT_VERIFICATION));
 
             //Convert DeviceSoftwareRules to JSON.
             JSONObject jsonDeviceSoftwareRules = new JSONObject();
@@ -597,11 +624,11 @@ public class Rules {
 
             if (dcRules.dataCollectionIsEnabled())
             {
-                jsonDataCollectionRules.put("DataCollectionEnabled","Enabled");
+                jsonDataCollectionRules.put("DataCollectionEnabled","ENABLED");
             }
             else
             {
-                jsonDataCollectionRules.put("DataCollectionEnabled", "Disabled");
+                jsonDataCollectionRules.put("DataCollectionEnabled", "DISABLED");
             }
 
             jsonDataCollectionRules.put("UploadType", dcRules.getUploadType());
@@ -640,7 +667,7 @@ public class Rules {
             Log.d(TAG, "JSON Generation is complete");
 
         } catch (JSONException e) {
-            Log.e(TAG, "Error creating JSON: " + e.getStackTrace());
+            Log.e(TAG, "Error creating JSON: " + Arrays.toString(e.getStackTrace()));
         }
     }
 }

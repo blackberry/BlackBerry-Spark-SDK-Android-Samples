@@ -19,6 +19,7 @@ package com.pyritefinancial.consumer.services;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
@@ -42,6 +43,7 @@ public class PINEntryActivity extends AppCompatActivity {
 
     private TextView mTopMessageTextView;
 
+    @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -70,67 +72,46 @@ public class PINEntryActivity extends AppCompatActivity {
 
     public void onClickNumber(View view)
     {
-        switch (view.getId())
-        {
-            case R.id.oneImageView:
-                mPINBeingEntered += '1';
+        int id = view.getId();
+        if (id == R.id.oneImageView) {
+            mPINBeingEntered += '1';
+            handlePINEntry();
+        } else if (id == R.id.twoImageView) {
+            mPINBeingEntered += '2';
+            handlePINEntry();
+        } else if (id == R.id.threeImageView) {
+            mPINBeingEntered += '3';
+            handlePINEntry();
+        } else if (id == R.id.fourImageView) {
+            mPINBeingEntered += '4';
+            handlePINEntry();
+        } else if (id == R.id.fiveImageView) {
+            mPINBeingEntered += '5';
+            handlePINEntry();
+        } else if (id == R.id.sixImageView) {
+            mPINBeingEntered += '6';
+            handlePINEntry();
+        } else if (id == R.id.sevenImageView) {
+            mPINBeingEntered += '7';
+            handlePINEntry();
+        } else if (id == R.id.eightImageView) {
+            mPINBeingEntered += '8';
+            handlePINEntry();
+        } else if (id == R.id.nineImageView) {
+            mPINBeingEntered += '9';
+            handlePINEntry();
+        } else if (id == R.id.zeroImageView) {
+            mPINBeingEntered += '0';
+            handlePINEntry();
+        } else if (id == R.id.backImageView) {
+            if (mPINBeingEntered.length() > 0) {
+                mPINBeingEntered = mPINBeingEntered.substring(0, mPINBeingEntered.length() - 1);
                 handlePINEntry();
-            break;
-
-            case R.id.twoImageView:
-                mPINBeingEntered += '2';
-                handlePINEntry();
-            break;
-
-            case R.id.threeImageView:
-                mPINBeingEntered += '3';
-                handlePINEntry();
-            break;
-
-            case R.id.fourImageView:
-                mPINBeingEntered += '4';
-                handlePINEntry();
-                break;
-
-            case R.id.fiveImageView:
-                mPINBeingEntered += '5';
-                handlePINEntry();
-                break;
-
-            case R.id.sixImageView:
-                mPINBeingEntered += '6';
-                handlePINEntry();
-                break;
-
-            case R.id.sevenImageView:
-                mPINBeingEntered += '7';
-                handlePINEntry();
-                break;
-
-            case R.id.eightImageView:
-                mPINBeingEntered += '8';
-                handlePINEntry();
-                break;
-
-            case R.id.nineImageView:
-                mPINBeingEntered += '9';
-                handlePINEntry();
-                break;
-
-            case R.id.zeroImageView:
-                mPINBeingEntered += '0';
-                handlePINEntry();
-                break;
-
-            case R.id.backImageView:
-                if (mPINBeingEntered.length() > 0) {
-                    mPINBeingEntered = mPINBeingEntered.substring(0, mPINBeingEntered.length() - 1);
-                    handlePINEntry();
-                }
-                break;
+            }
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private void handlePINEntry()
     {
         int pinLength = mPINBeingEntered.length();

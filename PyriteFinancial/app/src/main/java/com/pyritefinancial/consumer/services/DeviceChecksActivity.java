@@ -20,6 +20,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
+import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.View;
@@ -29,6 +30,7 @@ import android.widget.TextView;
 
 import com.blackberry.security.detect.DeviceChecker;
 import com.blackberry.security.threat.ApkInfo;
+import com.blackberry.security.threat.PlayProtectStatus;
 import com.blackberry.security.threat.ThreatAppMalware;
 import com.blackberry.security.threat.ThreatDeviceSecurity;
 import com.blackberry.security.threat.ThreatDeviceSoftware;
@@ -114,155 +116,182 @@ public class DeviceChecksActivity extends AppCompatActivity {
 
         //Check device security and display result to the user.
         ThreatDeviceSecurity deviceSecurity = (ThreatDeviceSecurity) threatStatus.getThreat(ThreatType.DeviceSecurity);
-        ThreatLevel deviceSecurityThreatLevel = deviceSecurity.getRiskLevel();
 
-        ProgressBar progressHW = findViewById(R.id.progressHW);
-        ImageView imageViewHWStatus = findViewById(R.id.imageViewHWStatus);
+        //Ensure the initial check has completed.
+        if (deviceSecurity != null && deviceSecurity.getEvaluatedTime() > 0) {
+            ThreatLevel deviceSecurityThreatLevel = deviceSecurity.getRiskLevel();
 
-        //Ensure this type of scan is enabled.  You can enable, disable and customize the capabilities of each scan type.
-        if (!deviceSecurity.getDetectionEnabled()) {
-            hwScanStatus = HARDWARE_SCAN_STATUS_UNKNOWN;
-            progressHW.setVisibility(View.VISIBLE);
-            imageViewHWStatus.setVisibility(View.INVISIBLE);
+            ProgressBar progressHW = findViewById(R.id.progressHW);
+            ImageView imageViewHWStatus = findViewById(R.id.imageViewHWStatus);
 
-        //This sample considers low level threats safe. Adjust based on your own application's requirements.
-        } else if (deviceSecurityThreatLevel == ThreatLevel.Null || deviceSecurityThreatLevel == ThreatLevel.Low) {
-            hwScanStatus = HARDWARE_SCAN_STATUS_SAFE;
-            progressHW.setVisibility(View.INVISIBLE);
-            imageViewHWStatus.setImageDrawable(ContextCompat.getDrawable(DeviceChecksActivity.this, R.drawable.pass));
-            imageViewHWStatus.setVisibility(View.VISIBLE);
+            //Ensure this type of scan is enabled.  You can enable, disable and customize the capabilities of each scan type.
+            if (!deviceSecurity.getDetectionEnabled()) {
+                hwScanStatus = HARDWARE_SCAN_STATUS_UNKNOWN;
+                progressHW.setVisibility(View.VISIBLE);
+                imageViewHWStatus.setVisibility(View.INVISIBLE);
+                sbSecurityErrors.append("Device Security checks are disabled.\n");
 
-        } else if (deviceSecurityThreatLevel == ThreatLevel.Critical ||
+                //This sample considers low level threats safe. Adjust based on your own application's requirements.
+            } else if (deviceSecurityThreatLevel == ThreatLevel.Null || deviceSecurityThreatLevel == ThreatLevel.Low) {
+                hwScanStatus = HARDWARE_SCAN_STATUS_SAFE;
+                progressHW.setVisibility(View.INVISIBLE);
+                imageViewHWStatus.setImageDrawable(ContextCompat.getDrawable(DeviceChecksActivity.this, R.drawable.pass));
+                imageViewHWStatus.setVisibility(View.VISIBLE);
+
+            } else if (deviceSecurityThreatLevel == ThreatLevel.Critical ||
                     deviceSecurityThreatLevel == ThreatLevel.High ||
                     deviceSecurityThreatLevel == ThreatLevel.Medium) {
-            hwScanStatus = HARDWARE_SCAN_STATUS_UNSAFE;
-            progressHW.setVisibility(View.INVISIBLE);
-            imageViewHWStatus.setImageDrawable(ContextCompat.getDrawable(DeviceChecksActivity.this, R.drawable.fail));
-            imageViewHWStatus.setVisibility(View.VISIBLE);
+                hwScanStatus = HARDWARE_SCAN_STATUS_UNSAFE;
+                progressHW.setVisibility(View.INVISIBLE);
+                imageViewHWStatus.setImageDrawable(ContextCompat.getDrawable(DeviceChecksActivity.this, R.drawable.fail));
+                imageViewHWStatus.setVisibility(View.VISIBLE);
 
-            sbSecurityErrors.append(deviceSecurity.getInfo());
-            sbSecurityErrors.append('\n');
+                sbSecurityErrors.append(deviceSecurity.getInfo());
+                sbSecurityErrors.append('\n');
 
-            //Check threats and build an error message to show to the user.
-            if (deviceSecurity.isDeviceCompromised())
-            {
-                sbSecurityErrors.append("Device is rooted or connected to a debugger.\n");
+                //Check threats and build an error message to show to the user.
+                if (deviceSecurity.isDeviceCompromised()) {
+                    sbSecurityErrors.append("Device is rooted or connected to a debugger.\n");
+                }
+
+                if (deviceSecurity.isDiskUnencrypted()) {
+                    sbSecurityErrors.append("Device storage is not encrypted.\n");
+                }
+
+                if (deviceSecurity.isDeveloperModeEnabled()) {
+                    sbSecurityErrors.append("Developer mode is enabled.\n");
+                }
+
+                if (deviceSecurity.isScreenLockDisabled()) {
+                    sbSecurityErrors.append("Screen lock (device password) has not been enabled.\n");
+                }
+
+                if (deviceSecurity.isDeviceAttestationFailed()) {
+                    sbSecurityErrors.append("Android Safetynet device attestation has failed or is not enabled.\n");
+                }
+
+                ThreatLevel emulationThreatLevel = deviceSecurity.getRunningOnEmulatorRisk();
+
+                if (emulationThreatLevel == ThreatLevel.Medium || emulationThreatLevel == ThreatLevel.High
+                        || emulationThreatLevel == ThreatLevel.Critical) {
+                    sbSecurityErrors.append("Risk of app running in an emulator: ");
+                    sbSecurityErrors.append(emulationThreatLevel.toString());
+                    sbSecurityErrors.append(".\n");
+                }
+
+                PlayProtectStatus playProtectStatus = deviceSecurity.getPlayProtectStatus();
+                switch (playProtectStatus) {
+                    case UNSUPPORTED_DEVICE:
+                        sbSecurityErrors.append("Play Protect is not supported on this device.\n");
+                        break;
+                    case DISABLED:
+                        sbSecurityErrors.append(("Play Protect is disabled.\n"));
+                        break;
+                    case UNDEFINED:
+                        sbSecurityErrors.append("The Play Protect DeviceSecurity check is either not enabled or has not completed.\n");
+                        break;
+                    case ENABLED:
+                        //Play Protect is enabled and verifying that installed and updated applications are safe.  Nothing to report.
+                        break;
+                }
             }
-
-            if (deviceSecurity.isDiskUnencrypted())
-            {
-                sbSecurityErrors.append("Device storage is not encrypted.\n");
-            }
-
-            if (deviceSecurity.isDeveloperModeEnabled())
-            {
-                sbSecurityErrors.append("Developer mode is enabled.\n");
-            }
-
-            if (deviceSecurity.isScreenLockDisabled())
-            {
-                sbSecurityErrors.append("Screen lock (device password) has not been enabled.\n");
-            }
-
-            if (deviceSecurity.isDeviceAttestationFailed())
-            {
-                sbSecurityErrors.append("Android Safetynet device attestation has failed or is not enabled.\n");
-            }
-
         }
 
         //Check OS security and display the result to the user.
         ThreatDeviceSoftware deviceOS = (ThreatDeviceSoftware)threatStatus.getThreat(ThreatType.DeviceSoftware);
 
-        ThreatLevel deviceOSThreatLevel = deviceOS.getRiskLevel();
+        //Ensure the initial check has completed.
+        if (deviceOS != null && deviceOS.getEvaluatedTime() > 0) {
+            ThreatLevel deviceOSThreatLevel = deviceOS.getRiskLevel();
 
-        ProgressBar progressOS = findViewById(R.id.progressOS);
-        ImageView imageViewOSStatus = findViewById(R.id.imageViewOSStatus);
+            ProgressBar progressOS = findViewById(R.id.progressOS);
+            ImageView imageViewOSStatus = findViewById(R.id.imageViewOSStatus);
 
-        //Ensure this type of scan is enabled.  You can enable, disable and customize the capabilities of each scan type.
-        if (!deviceOS.getDetectionEnabled()) {
-            osScanStatus = OS_SCAN_STATUS_UNKNOWN;
-            progressOS.setVisibility(View.VISIBLE);
-            imageViewOSStatus.setVisibility(View.INVISIBLE);
+            //Ensure this type of scan is enabled.  You can enable, disable and customize the capabilities of each scan type.
+            if (!deviceOS.getDetectionEnabled()) {
+                osScanStatus = OS_SCAN_STATUS_UNKNOWN;
+                progressOS.setVisibility(View.VISIBLE);
+                imageViewOSStatus.setVisibility(View.INVISIBLE);
+                sbSecurityErrors.append("Operating system checks are disabled.\n");
 
-        //This sample considers low level threats safe. Adjust based on your own application's requirements.
-        } else if (deviceOSThreatLevel == ThreatLevel.Null || deviceOSThreatLevel == ThreatLevel.Low) {
-            osScanStatus = OS_SCAN_STATUS_SAFE;
-            progressOS.setVisibility(View.INVISIBLE);
-            imageViewOSStatus.setImageDrawable(ContextCompat.getDrawable(DeviceChecksActivity.this, R.drawable.pass));
-            imageViewOSStatus.setVisibility(View.VISIBLE);
+                //This sample considers low level threats safe. Adjust based on your own application's requirements.
+            } else if (deviceOSThreatLevel == ThreatLevel.Null || deviceOSThreatLevel == ThreatLevel.Low) {
+                osScanStatus = OS_SCAN_STATUS_SAFE;
+                progressOS.setVisibility(View.INVISIBLE);
+                imageViewOSStatus.setImageDrawable(ContextCompat.getDrawable(DeviceChecksActivity.this, R.drawable.pass));
+                imageViewOSStatus.setVisibility(View.VISIBLE);
 
-        } else if (deviceOSThreatLevel == ThreatLevel.Critical || deviceOSThreatLevel == ThreatLevel.High ||
-                deviceOSThreatLevel == ThreatLevel.Medium) {
-            osScanStatus = OS_SCAN_STATUS_UNSAFE;
-            progressOS.setVisibility(View.INVISIBLE);
-            imageViewOSStatus.setImageDrawable(ContextCompat.getDrawable(DeviceChecksActivity.this, R.drawable.fail));
-            imageViewOSStatus.setVisibility(View.VISIBLE);
+            } else if (deviceOSThreatLevel == ThreatLevel.Critical || deviceOSThreatLevel == ThreatLevel.High ||
+                    deviceOSThreatLevel == ThreatLevel.Medium) {
+                osScanStatus = OS_SCAN_STATUS_UNSAFE;
+                progressOS.setVisibility(View.INVISIBLE);
+                imageViewOSStatus.setImageDrawable(ContextCompat.getDrawable(DeviceChecksActivity.this, R.drawable.fail));
+                imageViewOSStatus.setVisibility(View.VISIBLE);
 
-            sbSecurityErrors.append(deviceOS.getInfo());
-            sbSecurityErrors.append('\n');
+                sbSecurityErrors.append(deviceOS.getInfo());
+                sbSecurityErrors.append('\n');
 
-            //Check threats and build an error message to show to the user.
-            if (deviceOS.isDeviceManufacturerRestricted())
-            {
-                sbSecurityErrors.append("This device manufacturer is restricted.\n");
+                //Check threats and build an error message to show to the user.
+                if (deviceOS.isDeviceManufacturerRestricted()) {
+                    sbSecurityErrors.append("This device manufacturer is restricted.\n");
+                }
+
+                if (deviceOS.isDeviceModelRestricted()) {
+                    sbSecurityErrors.append("This device model is restricted.\n");
+                }
+
+                if (deviceOS.isDeviceOSRestricted()) {
+                    sbSecurityErrors.append("This device OS version is restricted.\n");
+                }
+
+                if (deviceOS.isDeviceSecurityPatchRestricted()) {
+                    sbSecurityErrors.append("This device security patch level is too old.\n");
+                }
+
             }
-
-            if (deviceOS.isDeviceModelRestricted())
-            {
-                sbSecurityErrors.append("This device model is restricted.\n");
-            }
-
-            if (deviceOS.isDeviceOSRestricted())
-            {
-                sbSecurityErrors.append("This device OS version is restricted.\n");
-            }
-
-            if (deviceOS.isDeviceSecurityPatchRestricted())
-            {
-                sbSecurityErrors.append("This device security patch level is too old.\n");
-            }
-
         }
 
         //Check device for malware and display the result to the user.
         ThreatAppMalware malware = (ThreatAppMalware) threatStatus.getThreat(ThreatType.AppMalware);
 
-        ApkInfo[] badApps = malware.getMaliciousApps();
-        ThreatLevel threatLevel = malware.getRiskLevel();
+        //Ensure the initial check has completed.
+        if (malware != null && malware.getEvaluatedTime() > 0) {
+            ApkInfo[] badApps = malware.getMaliciousApps();
+            ThreatLevel threatLevel = malware.getRiskLevel();
 
-        ProgressBar progressMalware = findViewById(R.id.progressMalware);
-        ImageView imageViewMalware = findViewById(R.id.imageViewMalware);
+            ProgressBar progressMalware = findViewById(R.id.progressMalware);
+            ImageView imageViewMalware = findViewById(R.id.imageViewMalware);
 
-        //Ensure this type of scan is enabled.  You can enable, disable and customize the capabilities of each scan type.
-        if (!malware.getDetectionEnabled()) {
-            mwScanStatus = MALWARE_SCAN_STATUS_UNKNOWN;
-            progressMalware.setVisibility(View.VISIBLE);
-            imageViewMalware.setVisibility(View.INVISIBLE);
+            //Ensure this type of scan is enabled.  You can enable, disable and customize the capabilities of each scan type.
+            if (!malware.getDetectionEnabled()) {
+                mwScanStatus = MALWARE_SCAN_STATUS_UNKNOWN;
+                progressMalware.setVisibility(View.VISIBLE);
+                imageViewMalware.setVisibility(View.INVISIBLE);
+                sbSecurityErrors.append("Malware checks are disabled.\n");
 
-        //This sample considers low level threats safe. Adjust based on your own application's requirements.
-        } else if (threatLevel == ThreatLevel.Null || threatLevel == ThreatLevel.Low) {
-            mwScanStatus = MALWARE_SCAN_STATUS_SAFE;
-            progressMalware.setVisibility(View.INVISIBLE);
-            imageViewMalware.setImageDrawable(ContextCompat.getDrawable(DeviceChecksActivity.this, R.drawable.pass));
-            imageViewMalware.setVisibility(View.VISIBLE);
+                //This sample considers low level threats safe. Adjust based on your own application's requirements.
+            } else if (threatLevel == ThreatLevel.Null || threatLevel == ThreatLevel.Low) {
+                mwScanStatus = MALWARE_SCAN_STATUS_SAFE;
+                progressMalware.setVisibility(View.INVISIBLE);
+                imageViewMalware.setImageDrawable(ContextCompat.getDrawable(DeviceChecksActivity.this, R.drawable.pass));
+                imageViewMalware.setVisibility(View.VISIBLE);
 
-        } else if (threatLevel == ThreatLevel.Critical || threatLevel == ThreatLevel.High || threatLevel == ThreatLevel.Medium) {
-            mwScanStatus = MALWARE_SCAN_STATUS_UNSAFE;
-            progressMalware.setVisibility(View.INVISIBLE);
-            imageViewMalware.setImageDrawable(ContextCompat.getDrawable(DeviceChecksActivity.this, R.drawable.fail));
-            imageViewMalware.setVisibility(View.VISIBLE);
+            } else if (threatLevel == ThreatLevel.Critical || threatLevel == ThreatLevel.High || threatLevel == ThreatLevel.Medium) {
+                mwScanStatus = MALWARE_SCAN_STATUS_UNSAFE;
+                progressMalware.setVisibility(View.INVISIBLE);
+                imageViewMalware.setImageDrawable(ContextCompat.getDrawable(DeviceChecksActivity.this, R.drawable.fail));
+                imageViewMalware.setVisibility(View.VISIBLE);
 
-            sbSecurityErrors.append(malware.getInfo());
-            sbSecurityErrors.append('\n');
+                sbSecurityErrors.append(malware.getInfo());
+                sbSecurityErrors.append('\n');
 
-            if (badApps.length > 0) {
-                sbSecurityErrors.append("Malicious Apps Detected:\n");
+                if (badApps.length > 0) {
+                    sbSecurityErrors.append("Malicious Apps Detected:\n");
 
-                for (int count = 0; count < badApps.length; count++)
-                {
-                    sbSecurityErrors.append(badApps[count].packageName);
-                    sbSecurityErrors.append('\n');
+                    for (int count = 0; count < badApps.length; count++) {
+                        sbSecurityErrors.append(badApps[count].packageName);
+                        sbSecurityErrors.append('\n');
+                    }
                 }
             }
         }
@@ -285,6 +314,7 @@ public class DeviceChecksActivity extends AppCompatActivity {
 
     //Triggers new scans of device security and device software.
     //Malware scanning is continuous by default, so triggering a new malware scan isn't required.
+    @SuppressLint("SetTextI18n")
     private void triggerRescan()
     {
         //On most devices this scan happens so quickly that the user won't see
@@ -302,22 +332,37 @@ public class DeviceChecksActivity extends AppCompatActivity {
 
         TextView textViewStatus = findViewById(R.id.textViewStatus);
         textViewStatus.setTextColor(ContextCompat.getColor(DeviceChecksActivity.this, R.color.regularTextColor));
-        textViewStatus.setText("New scan in progress.");
+        textViewStatus.setText("Touch here for scan status.");
 
         DeviceChecker dc = new DeviceChecker();
         dc.checkDeviceSecurity();
         dc.checkDeviceSoftware();
+
+        checkCurrentThreatStatus();
     }
 
     //Shows a dialog with detailed information about the threats detected.
     public void onClickForMore(View view)
     {
-        if (hwScanStatus == HARDWARE_SCAN_STATUS_UNSAFE || osScanStatus == OS_SCAN_STATUS_UNSAFE ||
-                mwScanStatus == MALWARE_SCAN_STATUS_UNSAFE)
+        if (hwScanStatus == HARDWARE_SCAN_STATUS_SAFE && osScanStatus == OS_SCAN_STATUS_SAFE &&
+                mwScanStatus == MALWARE_SCAN_STATUS_SAFE) {
+
+            DeviceChecksActivity.this.finish();
+        }
+        else
         {
-            //Device is not safe.  Display remediation information.
+            String title = "Some security checks are disabled or in progress.";
+
+            if (hwScanStatus == HARDWARE_SCAN_STATUS_UNSAFE || osScanStatus == OS_SCAN_STATUS_UNSAFE ||
+                    mwScanStatus == MALWARE_SCAN_STATUS_UNSAFE)
+            {
+                title = "Security Check Failed";
+            }
+
+            //Device is not safe or scans are in an unknown state.
+            // //Scan could be disabled or in progress.  Display remediation information.
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle("Security Check Failed");
+            builder.setTitle(title);
             builder.setMessage(securityError);
             builder.setPositiveButton("Refresh Threat Status", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
@@ -335,11 +380,6 @@ public class DeviceChecksActivity extends AppCompatActivity {
             });
 
             builder.create().show();
-
-        } else if (hwScanStatus == HARDWARE_SCAN_STATUS_SAFE && osScanStatus == OS_SCAN_STATUS_SAFE &&
-                mwScanStatus == MALWARE_SCAN_STATUS_SAFE) {
-
-            DeviceChecksActivity.this.finish();
         }
     }
 }

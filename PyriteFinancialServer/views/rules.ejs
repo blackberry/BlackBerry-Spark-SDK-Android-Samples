@@ -81,8 +81,8 @@
         <td>Device Lock Screen Check Type</td>
         <td>
           <select name="deviceLockScreenCheck" id="deviceLockScreenCheck">
-            <option value="Enabled" <%= (data["DeviceSecurityRules"]["DeviceLockScreen_Check"] == "Enabled") ? "selected" : "" %> >Enabled</option>
-            <option value="Disabled" <%= (data["DeviceSecurityRules"]["DeviceLockScreen_Check"] == "Disabled") ? "selected" : "" %> >Disabled</option>
+            <option value="ENABLED" <%= (data["DeviceSecurityRules"]["DeviceLockScreen_Check"] == "ENABLED") ? "selected" : "" %> >ENABLED</option>
+            <option value="DISABLED" <%= (data["DeviceSecurityRules"]["DeviceLockScreen_Check"] == "DISABLED") ? "selected" : "" %> >DISABLED</option>
           </select>
         </td>
       </tr>
@@ -90,8 +90,8 @@
         <td>Debug Detection Check Type</td>
         <td>
           <select name="debugDetectionCheck" id="debugDetectionCheck">
-            <option value="Enabled" <%= (data["DeviceSecurityRules"]["DebugDetection_Check"] == "Enabled") ? "selected" : "" %> >Enabled</option>
-            <option value="Disabled" <%= (data["DeviceSecurityRules"]["DebugDetection_Check"] == "Disabled") ? "selected" : "" %> >Disabled</option>
+            <option value="ENABLED" <%= (data["DeviceSecurityRules"]["DebugDetection_Check"] == "ENABLED") ? "selected" : "" %> >ENABLED</option>
+            <option value="DISABLED" <%= (data["DeviceSecurityRules"]["DebugDetection_Check"] == "DISABLED") ? "selected" : "" %> >DISABLED</option>
           </select>
         </td>
       </tr>
@@ -108,8 +108,8 @@
         <td>Jailbreak Detection Check </td>
         <td>
           <select name="jailbreakDetectionCheck" id="jailbreakDetectionCheck">
-            <option value="Enabled" <%= (data["DeviceSecurityRules"]["JailbreakDetection_Check"] == "Enabled") ? "selected" : "" %> >Enabled</option>
-            <option value="Disabled"<%= (data["DeviceSecurityRules"]["JailbreakDetection_Check"] == "Disabled") ? "selected" : "" %> >Disabled</option>
+            <option value="ENABLED" <%= (data["DeviceSecurityRules"]["JailbreakDetection_Check"] == "ENABLED") ? "selected" : "" %> >ENABLED</option>
+            <option value="DISABLED"<%= (data["DeviceSecurityRules"]["JailbreakDetection_Check"] == "DISABLED") ? "selected" : "" %> >DISABLED</option>
           </select>
         </td>
       </tr>
@@ -117,8 +117,8 @@
         <td>Hook Detection Check </td>
         <td>
           <select name="hookDetectionCheck" id="hookDetectionCheck">
-            <option value="Enabled" <%= (data["DeviceSecurityRules"]["HookDetection_Check"] == "Enabled") ? "selected" : "" %> >Enabled</option>
-            <option value="Disabled" <%= (data["DeviceSecurityRules"]["HookDetection_Check"] == "Disabled") ? "selected" : "" %> >Disabled</option>
+            <option value="ENABLED" <%= (data["DeviceSecurityRules"]["HookDetection_Check"] == "ENABLED") ? "selected" : "" %> >ENABLED</option>
+            <option value="DISABLED" <%= (data["DeviceSecurityRules"]["HookDetection_Check"] == "DISABLED") ? "selected" : "" %> >DISABLED</option>
           </select>
         </td>
       </tr>
@@ -126,8 +126,8 @@
         <td>Device Encryption Check (Android Only) </td>
         <td>
           <select name="deviceEncryptionCheck" id="deviceEncryptionCheck">
-            <option value="Enabled" <%= (data["DeviceSecurityRules"]["DeviceEncryption_Check"] == "Enabled") ? "selected" : "" %> >Enabled</option>
-            <option value="Disabled" <%= (data["DeviceSecurityRules"]["DeviceEncryption_Check"] == "Disabled") ? "selected" : "" %> >Disabled</option>
+            <option value="ENABLED" <%= (data["DeviceSecurityRules"]["DeviceEncryption_Check"] == "ENABLED") ? "selected" : "" %> >ENABLED</option>
+            <option value="DISABLED" <%= (data["DeviceSecurityRules"]["DeviceEncryption_Check"] == "DISABLED") ? "selected" : "" %> >DISABLED</option>
           </select>
         </td>
       </tr>
@@ -135,8 +135,8 @@
         <td>Android HW Key Verify Booy Check (Android Only) </td>
         <td>
           <select name="androidHWKeyVerifyBootCheck" id="androidHWKeyVerifyBootCheck">
-            <option value="Enabled" <%= (data["DeviceSecurityRules"]["AndroidHWKeyVerifyBoot_Check"] == "Enabled") ? "selected" : "" %> >Enabled</option>
-            <option value="Disabled" <%= (data["DeviceSecurityRules"]["AndroidHWKeyVerifyBoot_Check"] == "Disabled") ? "selected" : "" %> >Disabled</option>
+            <option value="ENABLED" <%= (data["DeviceSecurityRules"]["AndroidHWKeyVerifyBoot_Check"] == "ENABLED") ? "selected" : "" %> >ENABLED</option>
+            <option value="DISABLED" <%= (data["DeviceSecurityRules"]["AndroidHWKeyVerifyBoot_Check"] == "DISABLED") ? "selected" : "" %> >DISABLED</option>
           </select>
         </td>
       </tr>
@@ -144,11 +144,29 @@
         <td>Developer Mode Check (Android Only) </td>
         <td>
           <select name="developerModeCheck" id="developerModeCheck">
-            <option value="Enabled" <%= (data["DeviceSecurityRules"]["DeveloperMode_Check"] == "Enabled") ? "selected" : "" %> >Enabled</option>
-            <option value="Disabled" <%= (data["DeviceSecurityRules"]["DeveloperMode_Check"] == "Disabled") ? "selected" : "" %> >Disabled</option>
+            <option value="ENABLED" <%= (data["DeviceSecurityRules"]["DeveloperMode_Check"] == "ENABLED") ? "selected" : "" %> >ENABLED</option>
+            <option value="DISABLED" <%= (data["DeviceSecurityRules"]["DeveloperMode_Check"] == "DISABLED") ? "selected" : "" %> >DISABLED</option>
           </select>
         </td>
       </tr>
+      <tr>
+        <td>Emulator Detection (Android Only) </td>
+        <td>
+          <select name="emulatorDetectionCheck" id="emulatorDetectionCheck">
+            <option value="ENABLED" <%= (data["DeviceSecurityRules"]["EmulatorDetection_Check"] == "ENABLED") ? "selected" : "" %> >ENABLED</option>
+            <option value="DISABLED" <%= (data["DeviceSecurityRules"]["EmulatorDetection_Check"] == "DISABLED") ? "selected" : "" %> >DISABLED</option>
+          </select>
+        </td>
+      </tr>	  
+      <tr>
+        <td>Google Play Protect Check (Android Only) </td>
+        <td>
+          <select name="playProtectCheck" id="playProtectCheck">
+            <option value="ENABLED" <%= (data["DeviceSecurityRules"]["GooglePlayProtect_Check"] == "ENABLED") ? "selected" : "" %> >ENABLED</option>
+            <option value="DISABLED" <%= (data["DeviceSecurityRules"]["GooglePlayProtect_Check"] == "DISABLED") ? "selected" : "" %> >DISABLED</option>
+          </select>
+        </td>
+      </tr>	  
       <tr>
         <td>
           <h3>iOS Device Software Rules</h3>
@@ -158,8 +176,8 @@
         <td>Device OS Software Check </td>
         <td>
           <select name="iOSDeviceOSSoftwareCheck" id="iOSDeviceOSSoftwareCheck">
-            <option value="Enabled" <%= (data["iOSDeviceSoftwareRules"]["DeviceOSSoftware_Check"] == "Enabled") ? "selected" : "" %> >Enabled</option>
-            <option value="Disabled" <%= (data["iOSDeviceSoftwareRules"]["DeviceOSSoftware_Check"] == "Disabled") ? "selected" : "" %> >Disabled</option>
+            <option value="ENABLED" <%= (data["iOSDeviceSoftwareRules"]["DeviceOSSoftware_Check"] == "ENABLED") ? "selected" : "" %> >ENABLED</option>
+            <option value="DISABLED" <%= (data["iOSDeviceSoftwareRules"]["DeviceOSSoftware_Check"] == "DISABLED") ? "selected" : "" %> >DISABLED</option>
           </select>
         </td>
       </tr>
@@ -176,8 +194,8 @@
         <td>Device Security Patch Software Check </td>
         <td>
           <select name="deviceSecurityPatchSoftwareCheck" id="deviceSecurityPatchSoftwareCheck">
-            <option value="Enabled" <%= (data["AndroidDeviceSoftwareRules"]["DeviceSecurityPatchSoftware_Check"] == "Enabled") ? "selected" : "" %> >Enabled</option>
-            <option value="Disabled" <%= (data["AndroidDeviceSoftwareRules"]["DeviceSecurityPatchSoftware_Check"] == "Disabled") ? "selected" : "" %> >Disabled</option>
+            <option value="ENABLED" <%= (data["AndroidDeviceSoftwareRules"]["DeviceSecurityPatchSoftware_Check"] == "ENABLED") ? "selected" : "" %> >ENABLED</option>
+            <option value="DISABLED" <%= (data["AndroidDeviceSoftwareRules"]["DeviceSecurityPatchSoftware_Check"] == "DISABLED") ? "selected" : "" %> >DISABLED</option>
           </select>
         </td>
       </tr>
@@ -185,8 +203,8 @@
         <td>Device OS Software Check </td>
         <td>
           <select name="androidDeviceOSSoftwareCheck" id="androidDeviceOSSoftwareCheck">
-            <option value="Enabled" <%= (data["AndroidDeviceSoftwareRules"]["DeviceOSSoftware_Check"] == "Enabled") ? "selected" : "" %> >Enabled</option>
-            <option value="Disabled" <%= (data["AndroidDeviceSoftwareRules"]["DeviceOSSoftware_Check"] == "Disabled") ? "selected" : "" %> >Disabled</option>
+            <option value="ENABLED" <%= (data["AndroidDeviceSoftwareRules"]["DeviceOSSoftware_Check"] == "ENABLED") ? "selected" : "" %> >ENABLED</option>
+            <option value="DISABLED" <%= (data["AndroidDeviceSoftwareRules"]["DeviceOSSoftware_Check"] == "DISABLED") ? "selected" : "" %> >DISABLED</option>
           </select>
         </td>
       </tr>
@@ -194,8 +212,8 @@
         <td>Device Manufacturer Check </td>
         <td>
           <select name="deviceManufacturerCheck" id="deviceManufacturerCheck">
-            <option value="Enabled" <%= (data["AndroidDeviceSoftwareRules"]["DeviceManufacturer_Check"] == "Enabled") ? "selected" : "" %> >Enabled</option>
-            <option value="Disabled" <%= (data["AndroidDeviceSoftwareRules"]["DeviceManufacturer_Check"] == "Disabled") ? "selected" : "" %> >Disabled</option>
+            <option value="ENABLED" <%= (data["AndroidDeviceSoftwareRules"]["DeviceManufacturer_Check"] == "ENABLED") ? "selected" : "" %> >ENABLED</option>
+            <option value="DISABLED" <%= (data["AndroidDeviceSoftwareRules"]["DeviceManufacturer_Check"] == "DISABLED") ? "selected" : "" %> >DISABLED</option>
           </select>
         </td>
       </tr>
@@ -203,8 +221,8 @@
         <td>Device Model Check </td>
         <td>
           <select name="deviceModelCheck" id="deviceModelCheck">
-            <option value="Enabled" <%= (data["AndroidDeviceSoftwareRules"]["DeviceModel_Check"] == "Enabled") ? "selected" : "" %> >Enabled</option>
-            <option value="Disabled" <%= (data["AndroidDeviceSoftwareRules"]["DeviceModel_Check"] == "Disabled") ? "selected" : "" %> >Disabled</option>
+            <option value="ENABLED" <%= (data["AndroidDeviceSoftwareRules"]["DeviceModel_Check"] == "ENABLED") ? "selected" : "" %> >ENABLED</option>
+            <option value="DISABLED" <%= (data["AndroidDeviceSoftwareRules"]["DeviceModel_Check"] == "DISABLED") ? "selected" : "" %> >DISABLED</option>
           </select>
         </td>
       </tr>
@@ -277,8 +295,8 @@
         <td>Data Collection</td>
         <td>
           <select name="dataCollection" id="dataCollection">
-            <option value="Enabled" <%= (data["DataCollectionRules"]["DataCollectionEnabled"] == "Enabled") ? "selected" : "" %> >Enabled</option>
-            <option value="Disabled" <%= (data["DataCollectionRules"]["DataCollectionEnabled"] == "Disabled") ? "selected" : "" %> >Disabled</option>
+            <option value="ENABLED" <%= (data["DataCollectionRules"]["DataCollectionENABLED"] == "ENABLED") ? "selected" : "" %> >ENABLED</option>
+            <option value="DISABLED" <%= (data["DataCollectionRules"]["DataCollectionENABLED"] == "DISABLED") ? "selected" : "" %> >DISABLED</option>
           </select>
         </td>
       </tr>
@@ -324,8 +342,8 @@
         <td>App Malware Check (Android Only)</td>
         <td>
           <select name="appMalwareEnabled" id="appMalwareEnabled">
-            <option value="ENABLED" <%= (data["Features"]["AppMalware_Enabled"] == "ENABLED") ? "selected" : "" %> >Enabled</option>
-            <option value="DISABLED" <%= (data["Features"]["AppMalware_Enabled"] == "DISABLED") ? "selected" : "" %> >Disabled</option>
+            <option value="ENABLED" <%= (data["Features"]["AppMalware_Enabled"] == "ENABLED") ? "selected" : "" %> >ENABLED</option>
+            <option value="DISABLED" <%= (data["Features"]["AppMalware_Enabled"] == "DISABLED") ? "selected" : "" %> >DISABLED</option>
           </select>
         </td>
       </tr>
@@ -333,8 +351,8 @@
         <td>App Sideload Check</td>
         <td>
           <select name="appSideloadEnabled" id="appSideloadEnabled">
-            <option value="ENABLED" <%= (data["Features"]["AppSideload_Enabled"] == "ENABLED") ? "selected" : "" %> >Enabled</option>
-            <option value="DISABLED" <%= (data["Features"]["AppSideload_Enabled"] == "DISABLED") ? "selected" : "" %> >Disabled</option>
+            <option value="ENABLED" <%= (data["Features"]["AppSideload_Enabled"] == "ENABLED") ? "selected" : "" %> >ENABLED</option>
+            <option value="DISABLED" <%= (data["Features"]["AppSideload_Enabled"] == "DISABLED") ? "selected" : "" %> >DISABLED</option>
           </select>
         </td>
       </tr>
@@ -342,8 +360,8 @@
         <td>Device Security Check</td>
         <td>
           <select name="deviceSecurityEnabled" id="deviceSecurityEnabled">
-            <option value="ENABLED" <%= (data["Features"]["DeviceSecurity_Enabled"] == "ENABLED") ? "selected" : "" %> >Enabled</option>
-            <option value="DISABLED" <%= (data["Features"]["DeviceSecurity_Enabled"] == "DISABLED") ? "selected" : "" %> >Disabled</option>
+            <option value="ENABLED" <%= (data["Features"]["DeviceSecurity_Enabled"] == "ENABLED") ? "selected" : "" %> >ENABLED</option>
+            <option value="DISABLED" <%= (data["Features"]["DeviceSecurity_Enabled"] == "DISABLED") ? "selected" : "" %> >DISABLED</option>
           </select>
         </td>
       </tr>
@@ -351,8 +369,8 @@
         <td>Device Software Check</td>
         <td>
           <select name="deviceSoftwareEnabled" id="deviceSoftwaredEnabled">
-            <option value="ENABLED" <%= (data["Features"]["DeviceSoftware_Enabled"] == "ENABLED") ? "selected" : "" %> >Enabled</option>
-            <option value="DISABLED" <%= (data["Features"]["DeviceSoftware_Enabled"] == "DISABLED") ? "selected" : "" %> >Disabled</option>
+            <option value="ENABLED" <%= (data["Features"]["DeviceSoftware_Enabled"] == "ENABLED") ? "selected" : "" %> >ENABLED</option>
+            <option value="DISABLED" <%= (data["Features"]["DeviceSoftware_Enabled"] == "DISABLED") ? "selected" : "" %> >DISABLED</option>
           </select>
         </td>
       </tr>
@@ -360,26 +378,26 @@
         <td>Safe Browsing Check</td>
         <td>
           <select name="safeBrowsingEnabled" id="safeBrowsingEnabled">
-            <option value="ENABLED" <%= (data["Features"]["SafeBrowsing_Enabled"] == "ENABLED") ? "selected" : "" %> >Enabled</option>
-            <option value="DISABLED" <%= (data["Features"]["SafeBrowsing_Enabled"] == "DISABLED") ? "selected" : "" %> >Disabled</option>
+            <option value="ENABLED" <%= (data["Features"]["SafeBrowsing_Enabled"] == "ENABLED") ? "selected" : "" %> >ENABLED</option>
+            <option value="DISABLED" <%= (data["Features"]["SafeBrowsing_Enabled"] == "DISABLED") ? "selected" : "" %> >DISABLED</option>
           </select>
         </td>
       </tr>
       <tr>
         <td>Safe Messaging Check</td>
         <td>
-          <select name="safeMessagingEnabled" id="safeMessagingEnabled">
-            <option value="ENABLED" <%= (data["Features"]["SafeMessaging_Enabled"] == "ENABLED") ? "selected" : "" %> >Enabled</option>
-            <option value="DISABLED" <%= (data["Features"]["SafeMessaging_Enabled"] == "DISABLED") ? "selected" : "" %> >Disabled</option>
+          <select name="safeMessagingENABLED" id="safeMessagingENABLED">
+            <option value="ENABLED" <%= (data["Features"]["SafeMessaging_ENABLED"] == "ENABLED") ? "selected" : "" %> >ENABLED</option>
+            <option value="DISABLED" <%= (data["Features"]["SafeMessaging_ENABLED"] == "DISABLED") ? "selected" : "" %> >DISABLED</option>
           </select>
         </td>
       </tr>
       <tr>
         <td>Device Offline Check</td>
         <td>
-          <select name="deviceOfflineEnabled" id="deviceOfflineEnabled">
-            <option value="ENABLED" <%= (data["Features"]["DeviceOffline_Enabled"] == "ENABLED") ? "selected" : "" %> >Enabled</option>
-            <option value="DISABLED" <%= (data["Features"]["DeviceOffline_Enabled"] == "DISABLED") ? "selected" : "" %> >Disabled</option>
+          <select name="deviceOfflineENABLED" id="deviceOfflineENABLED">
+            <option value="ENABLED" <%= (data["Features"]["DeviceOffline_ENABLED"] == "ENABLED") ? "selected" : "" %> >ENABLED</option>
+            <option value="DISABLED" <%= (data["Features"]["DeviceOffline_ENABLED"] == "DISABLED") ? "selected" : "" %> >DISABLED</option>
           </select>
         </td>
       </tr>
