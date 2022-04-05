@@ -123,11 +123,6 @@ router.post('/save', function(req, res) {
 			"MalwareUploadItemSizeLimit_WiFi": incomingRules.malwareUploadItemSizeLimit_WiFi,
 			"MalwareUploadMonthlySizeLimit_Cellular": incomingRules.malwareUploadMonthlySizeLimit_Cellular,
 			"MalwareUploadMonthlySizeLimit_WiFi": incomingRules.malwareUploadMonthlySizeLimit_WiFi
-        },		
-        "DataCollectionRules": {
-            "DataCollectionEnabled": incomingRules.dataCollection,
-            "UploadType": incomingRules.dataCollectionUploadType,
-            "UploadMonthlyLimit": incomingRules.dataCollectionUploadLimit
         },
         "DeviceOfflineRules": {
             "MinutesToMedium": incomingRules.minutesToMedium,
@@ -140,7 +135,9 @@ router.post('/save', function(req, res) {
             "DeviceSoftware_Enabled": incomingRules.deviceSoftwareEnabled,
             "SafeBrowsing_Enabled": incomingRules.safeBrowsingEnabled,
             "SafeMessaging_Enabled": incomingRules.safeMessagingEnabled,
-            "DeviceOffline_Enabled": incomingRules.deviceOfflineEnabled
+            "DeviceOffline_Enabled": incomingRules.deviceOfflineEnabled,
+			"NetworkSecurity_Enabled": incomingRules.networkSecurityEnabled,
+			"WiFiSecurity_Enabled": incomingRules.wiFiSecurityEnabled
         }
     }
 	

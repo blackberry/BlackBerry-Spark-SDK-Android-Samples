@@ -23,6 +23,7 @@ import androidx.core.content.ContextCompat;
 import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -35,8 +36,10 @@ import com.blackberry.security.threat.ThreatAppMalware;
 import com.blackberry.security.threat.ThreatDeviceSecurity;
 import com.blackberry.security.threat.ThreatDeviceSoftware;
 import com.blackberry.security.threat.ThreatLevel;
+import com.blackberry.security.threat.ThreatNetworkSecurity;
 import com.blackberry.security.threat.ThreatStatus;
 import com.blackberry.security.threat.ThreatType;
+import com.blackberry.security.threat.ThreatWiFiSecurity;
 
 //DeviceChecksActivity demonstrates:
 //Checks the threat status of and warns the user of threats related to:
@@ -48,8 +51,6 @@ import com.blackberry.security.threat.ThreatType;
 // * Malware - Detects malicious applications or malware on an Android device using AI and machine learning to analyze the app package.
 
 public class DeviceChecksActivity extends AppCompatActivity {
-
-    private static final String TAG = DeviceChecksActivity.class.getSimpleName();
 
     //The following constants are used to track the level of threat for each scan type
     //used in this class.  This sample considers threat levels Critical, High and Medium to be
@@ -66,12 +67,24 @@ public class DeviceChecksActivity extends AppCompatActivity {
     private static final int MALWARE_SCAN_STATUS_UNSAFE = 220;
     private static final int MALWARE_SCAN_STATUS_UNKNOWN = 230;
 
+    private static final int WIFI_SCAN_STATUS_SAFE = 300;
+    private static final int WIFI_SCAN_STATUS_UNSAFE = 320;
+    private static final int WIFI_SCAN_STATUS_UNKNOWN = 330;
+
+    private static final int NETWORK_SCAN_STATUS_SAFE = 400;
+    private static final int NETWORK_SCAN_STATUS_UNSAFE = 420;
+    private static final int NETWORK_SCAN_STATUS_UNKNOWN = 430;
+
     //Holds the last known status.
     private int hwScanStatus = HARDWARE_SCAN_STATUS_UNKNOWN;
     private int osScanStatus = OS_SCAN_STATUS_UNKNOWN;
     private int mwScanStatus = MALWARE_SCAN_STATUS_UNKNOWN;
+    private int wifiScanStatus = WIFI_SCAN_STATUS_UNKNOWN;
+    private int networkScanStatus = NETWORK_SCAN_STATUS_UNKNOWN;
 
     private String securityError;
+
+    private static final String TAG = DeviceChecksActivity.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -124,8 +137,8 @@ public class DeviceChecksActivity extends AppCompatActivity {
             ProgressBar progressHW = findViewById(R.id.progressHW);
             ImageView imageViewHWStatus = findViewById(R.id.imageViewHWStatus);
 
-            //Ensure this type of scan is enabled.  You can enable, disable and customize the capabilities of each scan type.
-            if (!deviceSecurity.getDetectionEnabled()) {
+            //Ensure this type of scan has been checked.  You can enable, disable and customize the capabilities of each scan type.
+            if (!deviceSecurity.isChecked()) {
                 hwScanStatus = HARDWARE_SCAN_STATUS_UNKNOWN;
                 progressHW.setVisibility(View.VISIBLE);
                 imageViewHWStatus.setVisibility(View.INVISIBLE);
@@ -207,8 +220,8 @@ public class DeviceChecksActivity extends AppCompatActivity {
             ProgressBar progressOS = findViewById(R.id.progressOS);
             ImageView imageViewOSStatus = findViewById(R.id.imageViewOSStatus);
 
-            //Ensure this type of scan is enabled.  You can enable, disable and customize the capabilities of each scan type.
-            if (!deviceOS.getDetectionEnabled()) {
+            //Ensure this type of scan has been checked.  You can enable, disable and customize the capabilities of each scan type.
+            if (!deviceOS.isChecked()) {
                 osScanStatus = OS_SCAN_STATUS_UNKNOWN;
                 progressOS.setVisibility(View.VISIBLE);
                 imageViewOSStatus.setVisibility(View.INVISIBLE);
@@ -262,8 +275,8 @@ public class DeviceChecksActivity extends AppCompatActivity {
             ProgressBar progressMalware = findViewById(R.id.progressMalware);
             ImageView imageViewMalware = findViewById(R.id.imageViewMalware);
 
-            //Ensure this type of scan is enabled.  You can enable, disable and customize the capabilities of each scan type.
-            if (!malware.getDetectionEnabled()) {
+            //Ensure this type of scan has been checked.  You can enable, disable and customize the capabilities of each scan type.
+            if (!malware.isChecked()) {
                 mwScanStatus = MALWARE_SCAN_STATUS_UNKNOWN;
                 progressMalware.setVisibility(View.VISIBLE);
                 imageViewMalware.setVisibility(View.INVISIBLE);
@@ -285,7 +298,7 @@ public class DeviceChecksActivity extends AppCompatActivity {
                 sbSecurityErrors.append(malware.getInfo());
                 sbSecurityErrors.append('\n');
 
-                if (badApps.length > 0) {
+                if (badApps != null && badApps.length > 0) {
                     sbSecurityErrors.append("Malicious Apps Detected:\n");
 
                     for (int count = 0; count < badApps.length; count++) {
@@ -296,12 +309,81 @@ public class DeviceChecksActivity extends AppCompatActivity {
             }
         }
 
+        //Check WiFi security and display the result to the user.
+        //This check is disabled by default because it requires location permission. This sample displays
+        //any results in the more details section.
+        ThreatWiFiSecurity wiFiSecurity = (ThreatWiFiSecurity)threatStatus.getThreat(ThreatType.WiFiSecurity);
 
+        //Ensure the initial check has completed.
+        if (wiFiSecurity != null && wiFiSecurity.getEvaluatedTime() > 0) {
+            ThreatLevel threatLevel = wiFiSecurity.getRiskLevel();
+
+            //Ensure this type of scan has been checked.  You can enable, disable and customize the capabilities of each scan type.
+            if (!wiFiSecurity.isChecked()) {
+                wifiScanStatus = WIFI_SCAN_STATUS_UNKNOWN;
+                Log.i(TAG, "WiFi Security monitoring is disabled.\n");
+
+            //This sample considers low level threats safe. Adjust based on your own application's requirements.
+            } else if (threatLevel == ThreatLevel.Null || threatLevel == ThreatLevel.Low) {
+                wifiScanStatus = WIFI_SCAN_STATUS_SAFE;
+
+            } else if (threatLevel == ThreatLevel.Critical || threatLevel == ThreatLevel.High || threatLevel == ThreatLevel.Medium) {
+                wifiScanStatus = WIFI_SCAN_STATUS_UNSAFE;
+
+                sbSecurityErrors.append("WiFi network with SSID: ");
+                sbSecurityErrors.append(wiFiSecurity.getSsid());
+                sbSecurityErrors.append(" has been deemed unsafe. ");
+                sbSecurityErrors.append(wiFiSecurity.getInfo());
+                sbSecurityErrors.append('\n');
+            }
+        }
+
+        //Check Network for man in the middle attacks and display the result to the user.
+        //This sample displays any results in the more details section.
+        ThreatNetworkSecurity networkSecurity = (ThreatNetworkSecurity)threatStatus.getThreat(ThreatType.NetworkSecurity);
+
+        //Ensure the initial check has completed.
+        if (networkSecurity != null && networkSecurity.getEvaluatedTime() > 0) {
+            ThreatLevel threatLevel = networkSecurity.getRiskLevel();
+
+            //Ensure this type of scan has been checked.  You can enable, disable and customize the capabilities of each scan type.
+            if (!networkSecurity.isChecked()) {
+                networkScanStatus = NETWORK_SCAN_STATUS_UNKNOWN;
+                Log.i(TAG, "Network Security monitoring is disabled.\n");
+
+                //This sample considers low level threats safe. Adjust based on your own application's requirements.
+            } else if (threatLevel == ThreatLevel.Null || threatLevel == ThreatLevel.Low) {
+                networkScanStatus = NETWORK_SCAN_STATUS_SAFE;
+
+            } else if (threatLevel == ThreatLevel.Critical || threatLevel == ThreatLevel.High || threatLevel == ThreatLevel.Medium) {
+                networkScanStatus = NETWORK_SCAN_STATUS_UNSAFE;
+                sbSecurityErrors.append("A network man in the middle attack has been detected.");
+            }
+        }
+
+        //The status for ThreatWiFiSecurity and ThreatNetworkSecurity and shown in the same UI category.
+        //Update the category to safe if both are safe, or to unsafe if either is unsafe.
+        ProgressBar progressNetwork = findViewById(R.id.progressNetwork);
+        ImageView imageViewNetwork = findViewById(R.id.imageViewNetwork);
+
+
+        if (wifiScanStatus == WIFI_SCAN_STATUS_UNSAFE || networkScanStatus == NETWORK_SCAN_STATUS_UNSAFE) {
+            progressNetwork.setVisibility(View.INVISIBLE);
+            imageViewNetwork.setImageDrawable(ContextCompat.getDrawable(DeviceChecksActivity.this, R.drawable.fail));
+            imageViewNetwork.setVisibility(View.VISIBLE);
+        //WiFi scanning is disabled by default, so allow it to be unknown here.
+        } else if ((wifiScanStatus == WIFI_SCAN_STATUS_SAFE || wifiScanStatus == WIFI_SCAN_STATUS_UNKNOWN) &&
+                (networkScanStatus == NETWORK_SCAN_STATUS_SAFE)){
+        progressNetwork.setVisibility(View.INVISIBLE);
+        imageViewNetwork.setImageDrawable(ContextCompat.getDrawable(DeviceChecksActivity.this, R.drawable.pass));
+        imageViewNetwork.setVisibility(View.VISIBLE);
+        }
         securityError = sbSecurityErrors.toString();
 
         TextView textViewStatus = findViewById(R.id.textViewStatus);
         if (hwScanStatus == HARDWARE_SCAN_STATUS_UNSAFE || osScanStatus == OS_SCAN_STATUS_UNSAFE ||
-                mwScanStatus == MALWARE_SCAN_STATUS_UNSAFE) {
+                mwScanStatus == MALWARE_SCAN_STATUS_UNSAFE || wifiScanStatus == WIFI_SCAN_STATUS_UNSAFE ||
+                networkScanStatus == NETWORK_SCAN_STATUS_UNSAFE) {
             textViewStatus.setText("Security Warning \n Click for more information");
             textViewStatus.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.colorUNSAFE));
         }
@@ -323,12 +405,22 @@ public class DeviceChecksActivity extends AppCompatActivity {
         ImageView imageViewHWStatus = findViewById(R.id.imageViewHWStatus);
         ProgressBar progressOS = findViewById(R.id.progressOS);
         ImageView imageViewOSStatus = findViewById(R.id.imageViewOSStatus);
+        ProgressBar progressMalware = findViewById(R.id.progressMalware);
+        ImageView imageViewMalware = findViewById(R.id.imageViewMalware);
+        ProgressBar progressNetwork = findViewById(R.id.progressNetwork);
+        ImageView imageViewNetwork = findViewById(R.id.imageViewNetwork);
 
         imageViewHWStatus.setVisibility((View.INVISIBLE));
         progressHW.setVisibility((View.VISIBLE));
 
         imageViewOSStatus.setVisibility(View.INVISIBLE);
         progressOS.setVisibility(View.VISIBLE);
+
+        imageViewMalware.setVisibility((View.INVISIBLE));
+        progressMalware.setVisibility((View.VISIBLE));
+
+        imageViewNetwork.setVisibility((View.INVISIBLE));
+        progressNetwork.setVisibility((View.VISIBLE));
 
         TextView textViewStatus = findViewById(R.id.textViewStatus);
         textViewStatus.setTextColor(ContextCompat.getColor(DeviceChecksActivity.this, R.color.regularTextColor));
@@ -360,7 +452,7 @@ public class DeviceChecksActivity extends AppCompatActivity {
             }
 
             //Device is not safe or scans are in an unknown state.
-            // //Scan could be disabled or in progress.  Display remediation information.
+            //Scan could be disabled or in progress.  Display remediation information.
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setTitle(title);
             builder.setMessage(securityError);

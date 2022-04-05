@@ -4,6 +4,10 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.USE_FINGERPRINT"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
 
     <application
         android:name=".PyriteApplication"
@@ -12,6 +16,7 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="false"
+        android:usesCleartextTraffic="false"
         android:theme="@style/AppTheme.NoActionBar">
         <activity android:name=".PINEntryActivity"></activity>
         <activity android:name=".AccountBalanceActivity" />
@@ -25,12 +30,13 @@
         <!-- TODO Add your BlackBerry ClientID here. Refer to README.MD for instructions. -->
         <meta-data
             android:name="com.blackberry.security.ClientID"
-            android:value="< YOUR_BLACKBERRY_APPID_CLIENT_ID_HERE >" />
+            android:value="" />
 
         <activity
             android:name=".DeviceChecksActivity"
             android:launchMode="singleTask" />
-        <activity android:name=".MainActivity">
+        <activity android:name=".MainActivity"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

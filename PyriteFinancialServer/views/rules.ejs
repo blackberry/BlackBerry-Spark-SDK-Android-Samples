@@ -288,40 +288,6 @@
       </tr>		  
       <tr>
         <td>
-          <h3>Data Collection Rules</h3>
-        </td>
-      </tr>
-      <tr>
-        <td>Data Collection</td>
-        <td>
-          <select name="dataCollection" id="dataCollection">
-            <option value="ENABLED" <%= (data["DataCollectionRules"]["DataCollectionENABLED"] == "ENABLED") ? "selected" : "" %> >ENABLED</option>
-            <option value="DISABLED" <%= (data["DataCollectionRules"]["DataCollectionENABLED"] == "DISABLED") ? "selected" : "" %> >DISABLED</option>
-          </select>
-        </td>
-      </tr>
-      <tr>
-        <td>Data Collection Upload Type</td>
-        <td>
-          <select name="dataCollectionUploadType" id="dataCollectionUploadType">
-            <option value="WIFI_WHILE_CHARGING" <%= (data["DataCollectionRules"]["UploadType"] == "WIFI_WHILE_CHARGING") ? "selected" : "" %> >WiFi while Charging</option>
-            <option value="WIFI" <%= (data["DataCollectionRules"]["UploadType"] == "WIFI") ? "selected" : "" %> >WiFi</option>
-            <option value="WIFI_AND_MOBILE" <%= (data["DataCollectionRules"]["UploadType"] == "WIFI_AND_MOBILE") ? "selected" : "" %> >WiFi and Mobile</option>
-          </select>
-        </td>
-      </tr>
-      <tr>
-        <td>Data Collection Upload Limit</td>
-        <td>
-          <select name="dataCollectionUploadLimit" id="dataCollectionUploadLimit">
-            <option value="LIMIT_100MB"  <%= (data["DataCollectionRules"]["UploadMonthlyLimit"] == "LIMIT_100MB") ? "selected" : "" %> >100 MB</option>
-            <option value="LIMIT_50MB"  <%= (data["DataCollectionRules"]["UploadMonthlyLimit"] == "LIMIT_50MB") ? "selected" : "" %> >50 MB</option>
-            <option value="LIMIT_10MB" <%= (data["DataCollectionRules"]["UploadMonthlyLimit"] == "LIMIT_10MB") ? "selected" : "" %> >10 MB</option>
-          </select>
-        </td>
-      </tr>
-      <tr>
-        <td>
           <h3>Device Offline Rules</h3>
         </td>
       </tr>
@@ -386,21 +352,39 @@
       <tr>
         <td>Safe Messaging Check</td>
         <td>
-          <select name="safeMessagingENABLED" id="safeMessagingENABLED">
-            <option value="ENABLED" <%= (data["Features"]["SafeMessaging_ENABLED"] == "ENABLED") ? "selected" : "" %> >ENABLED</option>
-            <option value="DISABLED" <%= (data["Features"]["SafeMessaging_ENABLED"] == "DISABLED") ? "selected" : "" %> >DISABLED</option>
+          <select name="safeMessagingEnabled" id="safeMessagingEnabled">
+            <option value="ENABLED" <%= (data["Features"]["SafeMessaging_Enabled"] == "ENABLED") ? "selected" : "" %> >ENABLED</option>
+            <option value="DISABLED" <%= (data["Features"]["SafeMessaging_Enabled"] == "DISABLED") ? "selected" : "" %> >DISABLED</option>
           </select>
         </td>
       </tr>
       <tr>
         <td>Device Offline Check</td>
         <td>
-          <select name="deviceOfflineENABLED" id="deviceOfflineENABLED">
-            <option value="ENABLED" <%= (data["Features"]["DeviceOffline_ENABLED"] == "ENABLED") ? "selected" : "" %> >ENABLED</option>
-            <option value="DISABLED" <%= (data["Features"]["DeviceOffline_ENABLED"] == "DISABLED") ? "selected" : "" %> >DISABLED</option>
+          <select name="deviceOfflineEnabled" id="deviceOfflineEnabled">
+            <option value="ENABLED" <%= (data["Features"]["DeviceOffline_Enabled"] == "ENABLED") ? "selected" : "" %> >ENABLED</option>
+            <option value="DISABLED" <%= (data["Features"]["DeviceOffline_Enabled"] == "DISABLED") ? "selected" : "" %> >DISABLED</option>
           </select>
         </td>
-      </tr>
+      </tr>	  
+      <tr>
+        <td>Network Security Check</td>
+        <td>
+          <select name="networkSecurityEnabled" id="networkSecurityEnabled">
+            <option value="ENABLED" <%= (data["Features"]["NetworkSecurity_Enabled"] == "ENABLED") ? "selected" : "" %> >ENABLED</option>
+            <option value="DISABLED" <%= (data["Features"]["NetworkSecurity_Enabled"] == "DISABLED") ? "selected" : "" %> >DISABLED</option>
+          </select>
+        </td>
+      </tr>	  
+      <tr>
+        <td>WiFi Security Check (Android Only)</td>
+        <td>
+          <select name="wiFiSecurityEnabled" id="wiFiSecurityEnabled">
+            <option value="ENABLED" <%= (data["Features"]["WiFiSecurity_Enabled"] == "ENABLED") ? "selected" : "" %> >ENABLED</option>
+            <option value="DISABLED" <%= (data["Features"]["WiFiSecurity_Enabled"] == "DISABLED") ? "selected" : "" %> >DISABLED</option>
+          </select>
+        </td>
+      </tr>	  
       <tr>
         <td colspan="2"><input type="submit" value="Save"></td>
       </tr>

@@ -30,27 +30,20 @@ import android.view.MenuItem;
 import android.view.View;
 
 import com.blackberry.security.auth.AppAuthentication;
-import com.blackberry.security.config.ManageRules;
-import com.blackberry.security.config.rules.DataCollectionRules;
 import com.blackberry.security.content.Preferences;
 
 //IconActivity demonstrates:
 // BlackBerry Spark SDK secure shared preference storage.
-// Enabling of threat data collection.
 // Enabling of biometric authentication.
 
 public class IconActivity extends AppCompatActivity {
-
-    private static final String THREAT_COLLECTION_ENABLED = "ThreatCollectionEnabled";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_icon);
-        Toolbar myToolbar = (Toolbar) findViewById(R.id.iconToolbar);
+        Toolbar myToolbar = findViewById(R.id.iconToolbar);
         setSupportActionBar(myToolbar);
-
-        boolean promptedForLogging = false;  //Used so the app doesn't display 2 prompts to the user at once (to enable logging and biometrics).
 
         //Read the preference from a BlackBerry Spark SDK secure preference file.
         Preferences p = new Preferences();
@@ -58,65 +51,8 @@ public class IconActivity extends AppCompatActivity {
 
         final boolean bioOptedOut = prefs.getBoolean(BlackBerrySecurityAgent.BIOMETRIC_AUTH_OPT_OUT, false);
 
-        //Check if the user has agreed to anonymous threat data collection.
-        if (prefs.contains(THREAT_COLLECTION_ENABLED)) {
-
-            if (prefs.getBoolean(THREAT_COLLECTION_ENABLED, false)) {
-                //They have agreed, enable it.
-                enableThreatCollection();
-            }
-        }
-        else {
-            //Ask user to enable anonymous threat data collection.
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle("Enable Anonymous Threat Data Collection?");
-            builder.setMessage("The BlackBerry Spark SDK collects anonymous data that BlackBerry believes may assist in finding new, previously undetected, threats, and increasing confidence in the detection of threats. The information may bring benefits to future detection capabilities. The information collected does not allow identification of the individual user, device or organization.");
-            builder.setPositiveButton("Enable", new DialogInterface.OnClickListener() {
-                @SuppressLint("ApplySharedPref")
-                public void onClick(DialogInterface dialog, int id) {
-                    //Store the preference in a BlackBerry Spark SDK secure preference file.
-                    Preferences p = new Preferences();
-                    SharedPreferences prefs = p.getSharedPreferences(BlackBerrySecurityAgent.SHARED_PREFS_NAME, MODE_PRIVATE);
-                    prefs.edit().putBoolean(THREAT_COLLECTION_ENABLED, true).commit();
-                    enableThreatCollection();
-
-                    if (!bioOptedOut) {
-                        doBiometricsSetup();
-                    }
-
-                    dialog.dismiss();
-                }
-            });
-            builder.setNeutralButton("Ask Me Later", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int id) {
-                    if (!bioOptedOut) {
-                        doBiometricsSetup();
-                    }
-                    dialog.dismiss();
-                }
-            });
-            builder.setNegativeButton("Disable", new DialogInterface.OnClickListener() {
-                @SuppressLint("ApplySharedPref")
-                public void onClick(DialogInterface dialog, int id) {
-                    //Store the preference in a BlackBerry Spark SDK secure preference file.
-                    Preferences p = new Preferences();
-                    SharedPreferences prefs = p.getSharedPreferences(BlackBerrySecurityAgent.SHARED_PREFS_NAME, MODE_PRIVATE);
-                    prefs.edit().putBoolean(THREAT_COLLECTION_ENABLED, false).commit();
-
-                    if (!bioOptedOut) {
-                        doBiometricsSetup();
-                    }
-                    dialog.dismiss();
-                }
-            });
-            builder.create().show();
-
-            promptedForLogging = true;
-        }
-
         //Check if the user opted out of using biometrics, if not set up if needed.
-        if (!bioOptedOut && !promptedForLogging)
-        {
+        if (!bioOptedOut) {
             doBiometricsSetup();
         }
     }
@@ -177,15 +113,6 @@ public class IconActivity extends AppCompatActivity {
             });
             builder.create().show();
         }
-    }
-
-    //Enables anonymous threat data collection to aid in discovering new threats.
-    private void enableThreatCollection()
-    {
-        ManageRules manageRules = new ManageRules();
-        DataCollectionRules dcRules = manageRules.getDataCollectionRules();
-        dcRules.enableDataCollection();
-        manageRules.setDataCollectionRules(dcRules);
     }
 
     @Override

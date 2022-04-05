@@ -24,7 +24,7 @@
         "DebugDetection_Check": "ENABLED",
         "DebugDetection_EnforcementAction": "NOTIFY",
         "HookDetection_Check": "ENABLED",
-		"EmulatorDetection_Check": "ENABLED",
+        "EmulatorDetection_Check": "ENABLED",
         "GooglePlayProtect_Check": "ENABLED"
     },
     "AndroidDeviceSoftwareRules": {
@@ -52,6 +52,9 @@
         "DeviceSecurity_Enabled": "ENABLED",
         "DeviceSoftware_Enabled": "ENABLED",
         "SafeBrowsing_Enabled": "ENABLED",
-        "SafeMessaging_Enabled": "ENABLED"
+        "SafeMessaging_Enabled": "ENABLED",
+		"DeviceOffline_Enabled":"ENABLED",
+        "NetworkSecurity_Enabled": "ENABLED",
+        "WiFiSecurity_Enabled": "DISABLED"
     }
 }

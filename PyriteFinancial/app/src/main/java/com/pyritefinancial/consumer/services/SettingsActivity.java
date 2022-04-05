@@ -16,8 +16,13 @@ package com.pyritefinancial.consumer.services;
  *
  */
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SwitchCompat;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -25,18 +30,20 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
 import android.widget.CompoundButton;
-import android.widget.Switch;
 import android.widget.TextView;
 
 import com.blackberry.security.auth.AppAuthentication;
+import com.blackberry.security.config.ManageFeatures;
 import com.blackberry.security.config.ManageRules;
 import com.blackberry.security.content.Preferences;
 import com.blackberry.security.identity.AppIdentity;
+import com.blackberry.security.threat.ThreatType;
 import com.blackberry.security.util.Diagnostics;
 
 //SettingsActivity demonstrates:
@@ -50,6 +57,8 @@ public class SettingsActivity extends AppCompatActivity {
 
     private Diagnostics mDiagnostics;
     ManageRules mRules;
+
+    public static final int WIFI_LOCATION_PERMISSIONS = 1000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,7 +78,7 @@ public class SettingsActivity extends AppCompatActivity {
         //app instance to your server. This identifier is never sent to BlackBerry.
         textViewUUID.setText(identity.getAppInstanceIdentifier());
 
-        Switch biometricSwitch = findViewById(R.id.biometricSwitch);
+        SwitchCompat biometricSwitch = findViewById(R.id.biometricSwitch);
         AppAuthentication appAuth = new AppAuthentication();
         if (appAuth.isBiometricsSetup())
         {
@@ -87,7 +96,7 @@ public class SettingsActivity extends AppCompatActivity {
 
                 if (isChecked) {
                     if (appAuth.isBiometricsAvailable()) {
-                        prefs.edit().putBoolean(BlackBerrySecurityAgent.BIOMETRIC_AUTH_OPT_OUT, false).commit();
+                        prefs.edit().putBoolean(BlackBerrySecurityAgent.BIOMETRIC_AUTH_OPT_OUT, false).apply();
 
                         if (!appAuth.setupBiometrics()) {
                             AlertDialog alertDialog = new AlertDialog.Builder(SettingsActivity.this).create();
@@ -116,21 +125,120 @@ public class SettingsActivity extends AppCompatActivity {
                         buttonView.setChecked(false);
                     }
                 } else {
-                    prefs.edit().putBoolean(BlackBerrySecurityAgent.BIOMETRIC_AUTH_OPT_OUT, true).commit();
+                    prefs.edit().putBoolean(BlackBerrySecurityAgent.BIOMETRIC_AUTH_OPT_OUT, true).apply();
                     appAuth.deactivateBiometrics();
+                }
+            }
+        });
+
+        SwitchCompat wifiSecuritySwitch = findViewById(R.id.wifiSecuritySwitch);
+        ManageFeatures manageFeatures = new ManageFeatures();
+
+        if (manageFeatures.getFeature(ThreatType.WiFiSecurity) == ManageFeatures.FeatureStatus.ENABLED)
+        {
+            wifiSecuritySwitch.setChecked(true);
+        }
+
+        //Enable or disable WiFi security monitoring.
+        wifiSecuritySwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+
+                if (isChecked) {
+                    //Enable WiFi Security monitoring.
+                    //Warn the user that location permission is required if it is not yet enabled.
+                    //ACCESS_BACKGROUND_LOCATION permission is not applicable to API levels below 29.
+                    if (( ContextCompat.checkSelfPermission(
+                            SettingsActivity.this, android.Manifest.permission.ACCESS_COARSE_LOCATION )
+                            == PackageManager.PERMISSION_DENIED) ||
+                            ( ContextCompat.checkSelfPermission(
+                                    SettingsActivity.this, Manifest.permission.ACCESS_WIFI_STATE )
+                                    == PackageManager.PERMISSION_DENIED) ||
+                            ( ContextCompat.checkSelfPermission(
+                                    SettingsActivity.this, Manifest.permission.ACCESS_FINE_LOCATION )
+                                    == PackageManager.PERMISSION_DENIED) ||
+                            (((ContextCompat.checkSelfPermission(
+                                    SettingsActivity.this, Manifest.permission.ACCESS_BACKGROUND_LOCATION )
+                                    == PackageManager.PERMISSION_DENIED)) && android.os.Build.VERSION.SDK_INT >= 29)) {
+
+                        androidx.appcompat.app.AlertDialog.Builder builder = new
+                                androidx.appcompat.app.AlertDialog.Builder(SettingsActivity.this);
+                        builder.setTitle("Location Permission Required");
+                        builder.setMessage("WiFi Security checking requires permission to access this device's location. You will be prompted to allow location permission now.");
+                        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.dismiss();
+
+                                //Request Location and WiFi Permission.
+                                ActivityCompat.requestPermissions( SettingsActivity.this,
+                                        new String[] {  android.Manifest.permission.ACCESS_COARSE_LOCATION,
+                                                Manifest.permission.ACCESS_FINE_LOCATION,
+                                                Manifest.permission.ACCESS_WIFI_STATE},
+                                        WIFI_LOCATION_PERMISSIONS );
+                            }
+                        });
+                        builder.create().show();
+                    } else {
+                        //Permissions are granted, enabled WiFi Security monitoring.
+                        manageFeatures.enableFeature(ThreatType.WiFiSecurity);
+                    }
+                } else {
+                    //Disable WiFi Security monitoring.
+                    manageFeatures.disableFeature(ThreatType.WiFiSecurity);
                 }
             }
         });
     }
 
-    public void onClickUploadLogs(View view)
-    {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        int LOCATION_BACKGROUND_PERMISSIONS = 2000;
+        if (WIFI_LOCATION_PERMISSIONS == requestCode) {
+
+            if (grantResults.length == 3) {
+                int coarseLocation = grantResults[0];
+                int fineLocation = grantResults[1];
+                int accessWiFiState = grantResults[2];
+
+                //ACCESS_BACKGROUND_LOCATION permission is not applicable to API levels below 29.
+                //Assume granted for lower API levels.
+                if (ContextCompat.checkSelfPermission(
+                        SettingsActivity.this, Manifest.permission.ACCESS_BACKGROUND_LOCATION )
+                        == PackageManager.PERMISSION_DENIED && android.os.Build.VERSION.SDK_INT >= 29){
+
+                    //ACCESS_BACKGROUND_LOCATION can only be requested after fine and coarse location permission has been granted.
+                    //Ask for background access here.
+                    ActivityCompat.requestPermissions( SettingsActivity.this,
+                            new String[] {Manifest.permission.ACCESS_BACKGROUND_LOCATION},
+                            LOCATION_BACKGROUND_PERMISSIONS);
+
+                } else if (coarseLocation == PackageManager.PERMISSION_GRANTED &&
+                    fineLocation == PackageManager.PERMISSION_GRANTED &&
+                    accessWiFiState == PackageManager.PERMISSION_GRANTED) {
+
+                    //Permissions have been granted, enable WiFi Security monitoring.
+                    ManageFeatures manageFeatures = new ManageFeatures();
+                    manageFeatures.enableFeature(ThreatType.WiFiSecurity);
+                    SwitchCompat wifiSecuritySwitch = findViewById(R.id.wifiSecuritySwitch);
+                    wifiSecuritySwitch.setChecked(true);
+                }
+            }
+        } else if (LOCATION_BACKGROUND_PERMISSIONS == requestCode) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                //Permissions have been granted, enable WiFi Security monitoring.
+                ManageFeatures manageFeatures = new ManageFeatures();
+                manageFeatures.enableFeature(ThreatType.WiFiSecurity);
+                SwitchCompat wifiSecuritySwitch = findViewById(R.id.wifiSecuritySwitch);
+                wifiSecuritySwitch.setChecked(true);
+            }
+        }
+    }
+
+    public void onClickUploadLogs(View view) {
         scheduleLogUpload();
     }
 
     //Display the threat status level using DeviceChecksActivity.
-    public void onDisplayThreatStatus(View view)
-    {
+    public void onDisplayThreatStatus(View view) {
         Intent loginIntent = new Intent(SettingsActivity.this, DeviceChecksActivity.class);
         startActivity(loginIntent);
     }
@@ -187,15 +295,13 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     //Loads scan rules from a JSON file.
-    public void onLoadRules(View view)
-    {
+    public void onLoadRules(View view) {
         Rules sr = new Rules();
         sr.loadRules(this);
     }
 
     //Converts the currently set scan rules to JSON that could be saved or uploaded to a server.
-    public void onSaveRules(View view)
-    {
+    public void onSaveRules(View view) {
         Rules sr = new Rules();
         sr.saveRules();
     }

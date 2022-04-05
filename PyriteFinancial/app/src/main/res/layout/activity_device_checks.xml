@@ -144,8 +144,21 @@
         android:text="TextView"
         android:textColor="@color/regularTextColor"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintHorizontal_bias="0.487"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textViewNW" />
+
+    <TextView
+        android:id="@+id/textViewNW"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="24dp"
+        android:gravity="center_horizontal"
+        android:text="Network"
+        android:textAlignment="textStart"
+        android:textColor="@color/regularTextColor"
+        app:layout_constraintStart_toStartOf="@+id/textView4"
         app:layout_constraintTop_toBottomOf="@+id/textView4" />
 
     <ImageView
@@ -173,5 +186,26 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/textView2"
         app:layout_constraintVertical_bias="1.0" />
+
+    <ProgressBar
+        android:id="@+id/progressNetwork"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="28dp"
+        android:layout_height="30dp"
+        app:layout_constraintBottom_toBottomOf="@+id/textViewNW"
+        app:layout_constraintEnd_toEndOf="@+id/progressMalware"
+        app:layout_constraintStart_toStartOf="@+id/progressMalware"
+        app:layout_constraintTop_toTopOf="@+id/textViewNW" />
+
+    <ImageView
+        android:id="@+id/imageViewNetwork"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="@+id/textViewNW"
+        app:layout_constraintEnd_toEndOf="@+id/progressMalware"
+        app:layout_constraintStart_toStartOf="@+id/progressMalware"
+        app:layout_constraintTop_toTopOf="@+id/textViewNW"
+        app:srcCompat="@drawable/fail" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

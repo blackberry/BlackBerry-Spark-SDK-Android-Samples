@@ -61,7 +61,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="20dp"
-        android:layout_marginTop="60dp"
+        android:layout_marginTop="40dp"
         android:text="Upload BlackBerry Spark SDK Logs to BlackBerry"
         android:textColor="@color/regularTextColor"
         app:layout_constraintStart_toStartOf="parent"
@@ -151,7 +151,7 @@
         app:layout_constraintStart_toEndOf="@+id/buttonLoadScanOptions"
         app:layout_constraintTop_toTopOf="@+id/buttonLoadScanOptions" />
 
-    <Switch
+    <androidx.appcompat.widget.SwitchCompat
         android:id="@+id/biometricSwitch"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -161,6 +161,20 @@
         android:text="Enable Biometric Authentication"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/buttonLoadScanOptions" />
+        app:layout_constraintTop_toBottomOf="@+id/buttonLoadScanOptions"
+        tools:ignore="TouchTargetSizeCheck" />
+
+    <androidx.appcompat.widget.SwitchCompat
+        android:id="@+id/wifiSecuritySwitch"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="20dp"
+        android:text="Enable WiFi Security Checks"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/biometricSwitch"
+        tools:ignore="TouchTargetSizeCheck" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

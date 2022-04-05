@@ -37,6 +37,8 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GetTokenResult;
 
+import java.util.Objects;
+
 //BlackBerrySecurityAgent demonstrates:
 //Initialization of BlackBerry Spark SDK.
 //Registration of broadcast receivers to receive notifications of the change of the device threat level.
@@ -233,7 +235,7 @@ public class BlackBerrySecurityAgent extends BroadcastReceiver{
                         public void onComplete(@NonNull Task<GetTokenResult> task) {
                             if (task.isSuccessful()) {
                                 //Firebase Id Token was received.  This token will be valid for 1 hour.
-                                String idToken = task.getResult().getToken();
+                                String idToken = Objects.requireNonNull(task.getResult()).getToken();
                                 doLogin(idToken);
                             } else {
                                 // Failed to get Firebase Id token.
@@ -269,7 +271,7 @@ public class BlackBerrySecurityAgent extends BroadcastReceiver{
             Log.d("ACTION_THREAT_STATE_NOTIFICATION", "Threat Status: " + overall);
 
             //If it's high or medium warn the user.
-            if (overall == ThreatLevel.High || overall == ThreatLevel.Medium) {
+            if ((overall == ThreatLevel.High || overall == ThreatLevel.Medium)) {
                 Log.d(TAG, "High or medium threat level. Notifying user.");
                 Intent loginIntent = new Intent(mApp, DeviceChecksActivity.class);
                 loginIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
